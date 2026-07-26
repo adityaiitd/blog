@@ -60,6 +60,23 @@ export function saveHistory(versions: TripVersion[]) {
   }
 }
 
+export const AUTHOR_KEY = "italy-escape:author";
+
+export function loadAuthor(): string {
+  try { return localStorage.getItem(AUTHOR_KEY) ?? ""; } catch { return ""; }
+}
+
+export function saveAuthor(name: string) {
+  try { localStorage.setItem(AUTHOR_KEY, name); } catch { /* Private mode. */ }
+}
+
+/** Merges two histories by id, newest first, so both partners converge on one timeline. */
+export function mergeVersions(a: TripVersion[], b: TripVersion[]) {
+  const byId = new Map<string, TripVersion>();
+  [...a, ...b].forEach((version) => byId.set(version.id, version));
+  return pruneHistory([...byId.values()]);
+}
+
 export function recordAutoVersion(state: TripState) {
   const history = loadHistory();
   const latest = history.find((version) => !version.pinned);

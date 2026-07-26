@@ -9,8 +9,8 @@ import { useTrip } from "./TripProvider";
 import { cn } from "@/lib/utils";
 
 const links = [
-  ["/", "Overview"], ["/itinerary", "Days"], ["/hotels", "Stay"], ["/boats", "At sea"],
-  ["/map", "Map"], ["/value", "Save"], ["/costs", "Budget"],
+  ["/", "Overview"], ["/itinerary", "Days"], ["/hotels", "Stay"], ["/explore", "Explore"],
+  ["/boats", "At sea"], ["/map", "Map"], ["/costs", "Budget"],
 ];
 
 export function Nav() {

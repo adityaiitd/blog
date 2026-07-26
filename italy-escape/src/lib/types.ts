@@ -5,7 +5,7 @@ export type RoomLevel = "entry" | "sea-view" | "suite";
 export type WeatherStatus = "forecast-pending" | "go" | "watch" | "cancelled";
 export type TripTier = "luxury" | "value";
 /** Signature hotels earn resort days; boat bases keep money out of rooms you barely use. */
-export type HotelRole = "signature" | "boat-base";
+export type HotelRole = "signature" | "boat-base" | "value-stay";
 
 /** Real photographs served from the property's own CDN or its Booking.com listing. */
 export interface HotelPhoto {
@@ -193,6 +193,7 @@ export interface TripVersion {
   state: TripState;
   pinned?: boolean;
   summary?: string;
+  author?: string;
 }
 
 export type TripAction =

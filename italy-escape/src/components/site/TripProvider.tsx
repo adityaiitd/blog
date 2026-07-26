@@ -4,10 +4,11 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useReducer,
 import { freshInitialTripState } from "@/data";
 import { connectCollaboration, type CollaborationSession } from "@/lib/collab";
 import { decodeTripState } from "@/lib/shareState";
-import { loadDraft, recordAutoVersion, saveDraft } from "@/lib/storage";
+import { loadAuthor, loadDraft, loadHistory, mergeVersions, recordAutoVersion, saveAuthor, saveDraft, saveHistory } from "@/lib/storage";
 import { tripReducer } from "@/lib/tripReducer";
 import { normalizeTripState } from "@/lib/migrate";
-import type { TripAction, TripState } from "@/lib/types";
+import { diffTrips } from "@/lib/versions";
+import type { TripAction, TripState, TripVersion } from "@/lib/types";
 
 interface TripContextValue {
   state: TripState;
@@ -19,6 +20,12 @@ interface TripContextValue {
   reset: () => void;
   hydrationError?: string;
   peers: number;
+  versions: TripVersion[];
+  saveVersion: (name?: string) => void;
+  restoreVersion: (id: string) => void;
+  author: string;
+  setAuthor: (name: string) => void;
+  unsavedChanges: boolean;
 }
 
 const TripContext = createContext<TripContextValue | null>(null);
@@ -34,6 +41,11 @@ export function TripProvider({ children }: { children: React.ReactNode }) {
   const stateRef = useRef(state);
   const collab = useRef<CollaborationSession | null>(null);
   const lastAutoState = useRef<string | null>(null);
+  const [versions, setVersions] = useState<TripVersion[]>([]);
+  const [author, setAuthorState] = useState("");
+  const [savedSignature, setSavedSignature] = useState<string | null>(null);
+  const versionsRef = useRef<TripVersion[]>([]);
+  useEffect(() => { versionsRef.current = versions; }, [versions]);
 
   useEffect(() => { stateRef.current = state; }, [state]);
 
@@ -54,6 +66,12 @@ export function TripProvider({ children }: { children: React.ReactNode }) {
       } catch {
         setHydrationError("Your saved draft was from an older version, so the original itinerary was restored.");
       }
+      try {
+        const history = loadHistory();
+        setVersions(history);
+        setSavedSignature(history.find((version) => version.pinned)?.state ? JSON.stringify(history[0].state) : null);
+        setAuthorState(loadAuthor());
+      } catch { /* Private mode. */ }
       setHydrated(true);
     }, 0);
     return () => window.clearTimeout(timer);
@@ -72,7 +90,7 @@ export function TripProvider({ children }: { children: React.ReactNode }) {
     if (lastAutoState.current === null) { lastAutoState.current = serialized; return; }
     if (lastAutoState.current === serialized) return;
     const timer = window.setTimeout(() => {
-      recordAutoVersion(state);
+      setVersions(recordAutoVersion(state));
       lastAutoState.current = serialized;
     }, 4000);
     return () => window.clearTimeout(timer);
@@ -83,11 +101,18 @@ export function TripProvider({ children }: { children: React.ReactNode }) {
     const room = new URLSearchParams(window.location.search).get("room");
     if (!room) return;
     let cancelled = false;
-    connectCollaboration(room, stateRef.current, (remote) => {
-      if (!cancelled) baseDispatch({ type: "replace", state: remote });
-    }, setPeers).then((session) => {
+    connectCollaboration(room, stateRef.current, {
+      onRemoteState: (remote) => { if (!cancelled) baseDispatch({ type: "replace", state: normalizeTripState(remote) }); },
+      onRemoteVersions: (remote) => {
+        if (cancelled) return;
+        const merged = mergeVersions(versionsRef.current, remote);
+        setVersions(merged);
+        saveHistory(merged);
+      },
+      onPeers: setPeers,
+    }).then((session) => {
       if (cancelled) session.destroy();
-      else collab.current = session;
+      else { collab.current = session; session.publishVersions(versionsRef.current); }
     }).catch(() => setPeers(0));
     return () => { cancelled = true; collab.current?.destroy(); collab.current = null; };
   }, [hydrated]);
@@ -116,6 +141,36 @@ export function TripProvider({ children }: { children: React.ReactNode }) {
   }, []);
   const reset = useCallback(() => dispatch({ type: "replace", state: freshInitialTripState() }), [dispatch]);
 
+  const setAuthor = useCallback((name: string) => { setAuthorState(name); saveAuthor(name); }, []);
+
+  /** A save is a pinned, attributed snapshot that everyone on the shared link receives. */
+  const saveVersion = useCallback((name?: string) => {
+    const current = stateRef.current;
+    const previous = versionsRef.current[0]?.state;
+    const changes = previous ? diffTrips(previous, current) : [];
+    const version: TripVersion = {
+      id: crypto.randomUUID(),
+      name: name?.trim() || `Saved ${new Date().toLocaleString()}`,
+      createdAt: new Date().toISOString(),
+      state: structuredClone(current),
+      pinned: true,
+      author: author || "Someone with the link",
+      summary: changes.length ? changes.slice(0, 3).map((change) => `${change.label}: ${change.after}`).join(" · ") : "Saved the current plan",
+    };
+    const next = mergeVersions([version], versionsRef.current);
+    setVersions(next);
+    saveHistory(next);
+    collab.current?.publishVersions(next);
+    setSavedSignature(JSON.stringify(current));
+  }, [author]);
+
+  const restoreVersion = useCallback((id: string) => {
+    const version = versionsRef.current.find((candidate) => candidate.id === id);
+    if (version) dispatch({ type: "replace", state: normalizeTripState(version.state) });
+  }, [dispatch]);
+
+  const unsavedChanges = hydrated && savedSignature !== null && savedSignature !== JSON.stringify(state);
+
   useEffect(() => {
     const handler = (event: KeyboardEvent) => {
       if (!(event.metaKey || event.ctrlKey) || event.key.toLowerCase() !== "z") return;
@@ -131,7 +186,9 @@ export function TripProvider({ children }: { children: React.ReactNode }) {
     canUndo: historyState.canUndo,
     canRedo: historyState.canRedo,
     reset, hydrationError, peers,
-  }), [state, dispatch, undo, redo, reset, hydrationError, peers, historyState]);
+    versions, saveVersion, restoreVersion, author, setAuthor, unsavedChanges,
+  }), [state, dispatch, undo, redo, reset, hydrationError, peers, historyState,
+    versions, saveVersion, restoreVersion, author, setAuthor, unsavedChanges]);
 
   return <TripContext.Provider value={value}>{children}</TripContext.Provider>;
 }
