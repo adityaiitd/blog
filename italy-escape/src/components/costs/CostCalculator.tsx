@@ -29,7 +29,7 @@ export function CostCalculator() {
       </section>
       <section className="mb-16 grid gap-px bg-[var(--line)] sm:grid-cols-3">
         <div className="bg-[var(--paper)] p-7"><p className="eyebrow">Baseline</p><p className="mt-4 font-serif text-5xl">{money(summary.baseline)}</p><p className="mt-2 text-xs text-[var(--muted)]">Current choices + contingency</p></div>
-        <div className="bg-[var(--ink)] p-7 text-[color:var(--paper)]"><p className="eyebrow !text-[color:var(--paper)] opacity-65">Recommended</p><p className="mt-4 font-serif text-5xl">{money(summary.recommended)}</p><p className="mt-2 text-xs opacity-65">Space for considered upgrades</p></div>
+        <div className="on-ink bg-[var(--ink)] p-7"><p className="eyebrow on-ink opacity-65">Recommended</p><p className="mt-4 font-serif text-5xl">{money(summary.recommended)}</p><p className="mt-2 text-xs opacity-65">Space for considered upgrades</p></div>
         <div className="bg-[var(--paper)] p-7"><p className="eyebrow">Splurge</p><p className="mt-4 font-serif text-5xl">{money(summary.splurge)}</p><p className="mt-2 text-xs text-[var(--muted)]">Premium scenario multipliers</p></div>
       </section>
       <section className="mb-16">

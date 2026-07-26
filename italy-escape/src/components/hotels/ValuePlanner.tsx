@@ -34,7 +34,7 @@ export function ValuePlanner() {
             <div className="relative min-h-[280px]"><Image src={image[stay.region]} alt={stay.region} fill sizes="(min-width:1024px) 40vw,100vw" className="object-cover" /><div className="absolute inset-0 bg-black/25" /><h2 className="absolute bottom-6 left-6 font-serif text-5xl text-white">{stay.region}</h2></div>
             <div className="p-6 md:p-9">
               <div className="mb-7 flex rounded-full border border-[var(--line)] p-1">
-                {(["luxury", "value"] as TripTier[]).map((tier) => <button key={tier} onClick={() => dispatch({ type: "set-region-tier", stayId: stay.id, tier })} className={`flex flex-1 items-center justify-center gap-2 rounded-full px-4 py-3 text-xs uppercase tracking-wider ${stay.tier === tier ? "bg-[var(--ink)] text-[color:var(--paper)]" : ""}`}>{tier === "luxury" ? <Sparkles size={14} /> : <WalletCards size={14} />}{tier}</button>)}
+                {(["luxury", "value"] as TripTier[]).map((tier) => <button key={tier} onClick={() => dispatch({ type: "set-region-tier", stayId: stay.id, tier })} className={`flex flex-1 items-center justify-center gap-2 rounded-full px-4 py-3 text-xs uppercase tracking-wider ${stay.tier === tier ? "on-ink bg-[var(--ink)]" : ""}`}>{tier === "luxury" ? <Sparkles size={14} /> : <WalletCards size={14} />}{tier}</button>)}
               </div>
               <div className="grid gap-5 sm:grid-cols-2">
                 <div className={stay.tier === "luxury" ? "opacity-100" : "opacity-55"}><p className="eyebrow mb-2">Luxury</p><h3 className="font-serif text-2xl">{luxury?.name}</h3><p className="mt-3 text-sm">{money(luxuryTotal)} · hotel + boats</p></div>

@@ -40,6 +40,7 @@ body {
 button, input, textarea, select { font: inherit; color: inherit; }
 .font-serif { font-family: var(--font-cormorant), Georgia, serif; }
 .eyebrow { font-size: .7rem; letter-spacing: .2em; text-transform: uppercase; color: var(--muted); }
+.on-ink { color: var(--paper) !important; }
 .page-shell { margin-inline: auto; max-width: 1500px; padding: 3rem 1rem 6rem; }
 .section-title { font-family: var(--font-cormorant), Georgia, serif; font-size: clamp(2.5rem, 6vw, 5.5rem); font-weight: 400; line-height: .93; letter-spacing: -.035em; }
 .leaflet-container { background: #dfe5df; font-family: var(--font-manrope), sans-serif; }

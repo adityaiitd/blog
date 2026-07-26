@@ -10,7 +10,7 @@ export const Button = forwardRef<HTMLButtonElement, React.ButtonHTMLAttributes<H
         size === "sm" && "min-h-9 px-3 text-xs",
         size === "md" && "min-h-11 px-5 text-sm",
         size === "icon" && "size-10",
-        variant === "primary" && "bg-[var(--ink)] text-[color:var(--paper)] hover:opacity-85",
+        variant === "primary" && "on-ink bg-[var(--ink)] hover:opacity-85",
         variant === "quiet" && "bg-transparent text-[var(--muted)] hover:bg-[var(--surface)] hover:text-[var(--ink)]",
         variant === "outline" && "border border-[var(--line)] bg-[var(--paper)] text-[var(--ink)] hover:border-[var(--ink)]",
         variant === "danger" && "text-red-700 hover:bg-red-50 dark:text-red-300 dark:hover:bg-red-950/30",
