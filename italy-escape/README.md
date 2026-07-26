@@ -41,9 +41,25 @@ Every settled edit is also autosaved to a Google-Sheets-style timeline. Autosave
 
 The floating **Ask the trip** button understands commands such as “Make Amalfi cheaper,” “Set Tuscany to 5 nights,” “Move Capri boat to the weather day,” and “What is our total?” It works locally without a key. An optional `OPENAI_API_KEY` enables the server route for future free-form LLM integration; the deterministic assistant remains the default and no key is required.
 
-The visual itinerary explains what each activity is for (eating, sightseeing, walking, relaxing, travel or boating), why it is included, and where the couple sleeps. The hotel view includes pool/view facts, recommended room categories, official room and rate links, and editable night-by-night split stays. The default schedule groups Sardinia’s boat days at the end and Amalfi’s at the beginning so a single hotel move can reduce nights spent away from an expensive resort.
+The visual itinerary explains what each activity is for (eating, sightseeing, walking, relaxing, travel or boating), why it is included, and where the couple sleeps.
 
-Boat budgets were rechecked against published 2026 listings. The revised private-charter assumptions are approximately $1,500–$1,800 for Amalfi and $1,800 for Sardinia, with lower private/shared alternatives. Source links and the reasoning are visible on each boat card.
+## Nights are priced individually
+
+Hotels carry a role. Signature hotels hold the days the property itself is the point; boat bases under $400 a night cover days spent entirely at sea. The seeded plan therefore reads:
+
+- Sardinia: three nights at Cala di Volpe, then two nights at Hotel La Vecchia Fonte in Palau (8.6/10 from ~1,149 reviews) beside the harbour both sails leave from.
+- Tuscany: four nights at COMO Castello Del Nero, one base.
+- Amalfi Coast: arrival plus both sailing nights at Palazzo Ferraioli in Atrani (4.3/5 from ~455 reviews, rooftop terrace, ten-minute walk to Amalfi), then two nights at Anantara for its cliffside infinity pool.
+
+Every night is a dropdown, so any split can be changed. "Use recommended split" reapplies the pattern after edits.
+
+## Honest pricing
+
+Rates and charters are researched estimates, never live quotes. Each one shows a verification chip linking to the source it was priced from, and each hotel shows its rating, review count and review site. Boat budgets are anchored to Viator listings for these exact routes: La Maddalena private with skipper from about $880, Amalfi to Capri private from €1,090. Those headline prices cover 8–12 guests, so a party of two sits at the lower end. Non-included costs such as Capri docking fees and Blue Grotto tickets are listed on each card.
+
+## Budget target
+
+The trip carries an editable target, seeded at $35,000 all-in for two people, with a live tracker on the overview and budget pages. When the plan runs over, ranked levers show the savings each change produces and apply as a single undoable edit. The seeded plan lands near $34,900 including 7 percent contingency.
 
 ## Print, PDF and presentation
 
