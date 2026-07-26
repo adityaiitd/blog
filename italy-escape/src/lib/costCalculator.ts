@@ -1,4 +1,5 @@
-import type { CostCategory, HotelOption, Stay, TripState } from "./types";
+import { recommendedNightAssignments } from "./splitStay";
+import type { CostCategory, HotelOption, Stay, TripAction, TripState } from "./types";
 
 export const money = (value: number) =>
   new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(value);
@@ -90,4 +91,83 @@ export function calculateCosts(state: TripState): CostSummary {
   const nights = Math.max(1, state.stays.reduce((sum, stay) => sum + stay.nights, 0));
   const travelers = Math.max(1, state.travelers);
   return { subtotal, baseline, recommended, splurge, perNight: baseline / nights, perPerson: baseline / travelers, categories };
+}
+
+export interface BudgetLever {
+  id: string;
+  label: string;
+  detail: string;
+  savings: number;
+  actions: TripAction[];
+}
+
+export interface BudgetStatus {
+  target: number;
+  total: number;
+  difference: number;
+  withinTarget: boolean;
+  percentOfTarget: number;
+  levers: BudgetLever[];
+}
+
+/**
+ * Ranks concrete, reversible ways to reach the target. Each lever is expressed as normal
+ * trip actions so applying one is an ordinary edit that undo can reverse.
+ */
+export function fitToTarget(state: TripState): BudgetStatus {
+  const total = calculateCosts(state).baseline;
+  const target = state.budgetTarget;
+  const levers: BudgetLever[] = [];
+  const contingency = 1 + Math.max(0, state.contingencyPercent) / 100;
+
+  for (const stay of state.stays) {
+    const current = hotelsTotal(state.hotels, [stay]);
+    const suggested = recommendedNightAssignments(stay, state);
+    const proposed = hotelsTotal(state.hotels, [{ ...stay, nightHotelIds: suggested }]);
+    const savings = (current - proposed) * contingency;
+    if (savings > 1) {
+      const baseName = state.hotels.find((hotel) => hotel.id === suggested.find((id) => id !== stay.hotelId))?.name;
+      levers.push({
+        id: `split-${stay.id}`,
+        label: `Move ${stay.region} boat nights to ${baseName ?? "a harbour base"}`,
+        detail: "Keeps the signature hotel for the days you actually use it.",
+        savings,
+        actions: suggested.map((hotelId, nightIndex) => ({ type: "assign-stay-night", stayId: stay.id, nightIndex, hotelId })),
+      });
+    }
+  }
+
+  for (const boat of state.boats) {
+    const savings = (boat.budget - boat.valueBudget) * contingency * (1 + state.taxSettings.boatVatPercent / 100);
+    if (boat.valueBudget < boat.budget) {
+      levers.push({
+        id: `boat-${boat.id}`,
+        label: `Use the smaller boat for ${boat.name}`,
+        detail: `${boat.valueVessel} instead of ${boat.vesselType}.`,
+        savings,
+        actions: [{ type: "update-boat", id: boat.id, patch: { budget: boat.valueBudget, vesselType: boat.valueVessel } }],
+      });
+    }
+  }
+
+  const dining = state.costs.find((category) => category.id === "restaurants");
+  if (dining?.amount && dining.amount > 3500) {
+    const reduced = Math.max(3500, Math.round(dining.amount * 0.85));
+    levers.push({
+      id: "dining",
+      label: "Trim the dining allowance by 15 percent",
+      detail: "Keeps the special dinners, assumes lighter lunches.",
+      savings: (dining.amount - reduced) * contingency * (1 + state.taxSettings.diningServicePercent / 100),
+      actions: [{ type: "update-cost", id: dining.id, patch: { amount: reduced } }],
+    });
+  }
+
+  return {
+    target,
+    total,
+    difference: total - target,
+    withinTarget: total <= target,
+    percentOfTarget: target > 0 ? total / target * 100 : 0,
+    levers: levers.sort((a, b) => b.savings - a.savings),
+  };
 }

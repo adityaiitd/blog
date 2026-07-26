@@ -1,6 +1,7 @@
 import { format } from "date-fns";
-import { calculateCosts, money } from "./costCalculator";
+import { calculateCosts, fitToTarget, money } from "./costCalculator";
 import { dateForOffset } from "./schedule";
+import { recommendedNightAssignments } from "./splitStay";
 import type { TripAction, TripState, TripTier } from "./types";
 
 export interface ChatResult { reply: string; actions: TripAction[] }
@@ -14,19 +15,36 @@ export function interpretTripCommand(input: string, state: TripState): ChatResul
   if (!text) return { reply: "Tell me what you would like to change.", actions: [] };
 
   if (/boat.*(?:price|budget|expensive)|why.*boat/.test(lower)) {
-    return { reply: "I rechecked 2026 published rates. Private Sardinia RIBs generally run about €700–€2,500; private Amalfi gozzos about €1,400–€1,900. The plan now budgets $6,900 before gratuity across four days instead of the original $14,000.", actions: [] };
+    const charters = state.boats.reduce((sum, boat) => sum + boat.budget, 0);
+    return { reply: `Checked against Viator listings for these exact routes: La Maddalena private with skipper from about $880, Amalfi to Capri private from €1,090. Those cover 8–12 guests, so for two the plan budgets ${money(charters)} across four days instead of the original $14,000.`, actions: [] };
   }
-  if (/which hotels?.*(?:pool|rooftop)|(?:pool|rooftop).*hotels?/.test(lower)) {
+  if (/review|rating|pool|rooftop/.test(lower)) {
+    const rated = state.hotels.filter((hotel) => hotel.verified && hotel.rating > 0)
+      .map((hotel) => `${hotel.name} ${hotel.rating}/${hotel.ratingScale} from ${hotel.reviewCount.toLocaleString()} reviews`)
+      .join("; ");
     const rooftop = state.hotels.filter((hotel) => hotel.rooftop).map((hotel) => hotel.name).join(", ");
-    return { reply: `Every recommended hotel has a pool. For a true rooftop pool choose ${rooftop || "Hotel Marina Riviera"}; for the strongest infinity-pool views choose Anantara in Amalfi, Caruso in Ravello, or Castiglion del Bosco in Tuscany.`, actions: [] };
+    return { reply: `Verified ratings: ${rated}. Rooftop terraces: ${rooftop}. Every hotel card links to its review page and official rooms page.`, actions: [] };
   }
   const splitRegion = /(?:optimize|split).*(sardinia|amalfi)/.exec(lower);
   if (splitRegion) {
     const stay = state.stays.find((item) => item.region.toLowerCase().includes(splitRegion[1]));
     if (stay) {
-      const ids = stay.region === "Sardinia" ? ["cala", "cala", "cala", "gabbiano", "gabbiano"] : ["marina-riviera", "marina-riviera", "marina-riviera", "anantara", "anantara"];
-      return { reply: `${stay.region} now uses one practical split: boat-friendly value nights and luxury resort nights when you can actually enjoy the property.`, actions: ids.slice(0, stay.nights).map((hotelId, nightIndex) => ({ type: "assign-stay-night", stayId: stay.id, nightIndex, hotelId })) };
+      const ids = recommendedNightAssignments(stay, state);
+      const baseName = state.hotels.find((hotel) => hotel.id === ids.find((id) => id !== stay.hotelId))?.name;
+      return { reply: `${stay.region} now splits its nights: the signature hotel on resort days and ${baseName ?? "a harbour base"} on the days you are at sea.`, actions: ids.map((hotelId, nightIndex) => ({ type: "assign-stay-night", stayId: stay.id, nightIndex, hotelId })) };
     }
+  }
+  if (/under\s*\$?\s*\d|target|fit.*budget|cheaper overall/.test(lower)) {
+    const status = fitToTarget(state);
+    const requested = lower.match(/under\s*\$?\s*(\d[\d,]*)\s*k?/);
+    const target = requested ? Number(requested[1].replace(/,/g, "")) * (/k/.test(requested[0]) ? 1000 : 1) : state.budgetTarget;
+    const actions: TripAction[] = target !== state.budgetTarget ? [{ type: "set-budget-target", value: target }] : [];
+    if (status.total <= target) return { reply: `You are already at ${money(status.total)}, which is ${money(target - status.total)} under ${money(target)}.`, actions };
+    const applied = status.levers.slice(0, 2);
+    return {
+      reply: `To reach ${money(target)} I applied: ${applied.map((lever) => lever.label.toLowerCase()).join("; ")}.`,
+      actions: [...actions, ...applied.flatMap((lever) => lever.actions)],
+    };
   }
   if (/total|how much|budget/.test(lower)) {
     const costs = calculateCosts(state);

@@ -4,6 +4,7 @@ import Image from "next/image";
 import { ArrowDown } from "lucide-react";
 import { EditableDate, EditableText } from "@/components/edit/Editable";
 import { RouteEditor } from "@/components/edit/RouteEditor";
+import { BudgetTarget } from "@/components/costs/BudgetTarget";
 import { RouteMap } from "@/components/map/RouteMap";
 import { ShareBar } from "@/components/share/ShareBar";
 import { useTrip } from "@/components/site/TripProvider";
@@ -32,6 +33,7 @@ export default function Home() {
           <div><p className="eyebrow mb-4">The grand route</p><h1 className="section-title">Three chapters,<br />one Italian summer.</h1></div>
           <div className="max-w-xl md:justify-self-end"><p className="mb-8 text-lg leading-8 text-[var(--muted)]">Fourteen hotel nights from Sardinia’s crystalline coves through the vineyards of Tuscany to the vertical drama of Amalfi. Every stop, connection and estimate is yours to change.</p><ShareBar /></div>
         </div>
+        <div className="mb-10"><BudgetTarget compact /></div>
         <div className="mb-10 grid gap-px bg-[var(--line)] md:grid-cols-3">{state.stays.map((stay, index) => { const hotelNames = [...new Set((stay.nightHotelIds ?? Array(stay.nights).fill(stay.hotelId)).map((id) => state.hotels.find((hotel) => hotel.id === id)?.name).filter(Boolean))]; const boatDays = state.boats.filter((boat) => boat.region === stay.region).length; return <article key={stay.id} className="bg-[var(--paper)] p-6"><p className="eyebrow">Chapter {index + 1} · {stay.nights} nights</p><h2 className="mt-2 font-serif text-3xl">{stay.region}</h2><p className="mt-3 text-sm leading-6 text-[var(--muted)]">{index === 0 ? "Sea, beach and island-hopping" : index === 1 ? "Wine country, art and restorative hotel time" : "Coastal villages, two sails and a final pool day"}</p><p className="mt-4 text-xs"><b>Sleep:</b> {hotelNames.join(" → ")}</p>{boatDays > 0 && <p className="mt-1 text-xs"><b>At sea:</b> {boatDays} days</p>}</article>; })}</div>
         <RouteMap />
         <details className="mt-12 border-y border-[var(--line)] py-5"><summary className="cursor-pointer text-sm font-medium">Advanced: edit airports, transfers and route legs</summary><RouteEditor /></details>

@@ -8,9 +8,24 @@ export function normalizeTripState(input: TripState): TripState {
     ...defaults,
     ...input,
     taxSettings: input.taxSettings ?? defaults.taxSettings,
+    budgetTarget: input.budgetTarget ?? defaults.budgetTarget,
     stays: input.stays.map((stay) => ({ ...stay, tier: stay.tier ?? "luxury" })),
     hotels: [
-      ...input.hotels.map((hotel) => ({ ...defaults.hotels.find((candidate) => candidate.id === hotel.id), ...hotel, tier: hotel.tier ?? "luxury" as const })),
+      ...input.hotels.map((hotel) => {
+        const fallback = defaults.hotels.find((candidate) => candidate.id === hotel.id);
+        return {
+          ...fallback,
+          ...hotel,
+          tier: hotel.tier ?? "luxury" as const,
+          role: hotel.role ?? fallback?.role ?? "signature",
+          rating: hotel.rating ?? fallback?.rating ?? 0,
+          ratingScale: hotel.ratingScale ?? fallback?.ratingScale ?? 5,
+          reviewCount: hotel.reviewCount ?? fallback?.reviewCount ?? 0,
+          reviewSource: hotel.reviewSource ?? fallback?.reviewSource ?? "Tripadvisor",
+          reviewUrl: hotel.reviewUrl ?? fallback?.reviewUrl ?? `https://www.tripadvisor.com/Search?q=${encodeURIComponent(hotel.name)}`,
+          verified: hotel.verified ?? fallback?.verified ?? false,
+        };
+      }),
       ...defaults.hotels.filter((hotel) => !input.hotels.some((candidate) => candidate.id === hotel.id)),
     ],
     routeLegs: input.routeLegs.map((leg) => ({
@@ -36,6 +51,11 @@ export function normalizeTripState(input: TripState): TripState {
         waypointIds: boat.waypointIds ?? fallback?.waypointIds ?? [],
         valueBudget: boat.valueBudget ?? Math.round(boat.budget * .5),
         valueVessel: boat.valueVessel ?? "Shared charter",
+        priceSourceName: boat.priceSourceName ?? fallback?.priceSourceName ?? "Viator",
+        rating: boat.rating ?? fallback?.rating ?? 0,
+        reviewCount: boat.reviewCount ?? fallback?.reviewCount ?? 0,
+        excludes: boat.excludes ?? fallback?.excludes ?? [],
+        verified: boat.verified ?? fallback?.verified ?? false,
       };
     }),
     destinations: input.destinations.some((place) => place.waypoint)

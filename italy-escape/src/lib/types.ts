@@ -4,6 +4,8 @@ export type BookingStatus = "idea" | "requested" | "booked";
 export type RoomLevel = "entry" | "sea-view" | "suite";
 export type WeatherStatus = "forecast-pending" | "go" | "watch" | "cancelled";
 export type TripTier = "luxury" | "value";
+/** Signature hotels earn resort days; boat bases keep money out of rooms you barely use. */
+export type HotelRole = "signature" | "boat-base";
 export type ActivityVenue = "hotel" | "boat" | "public" | "transit";
 export type ActivityPurpose = "eat" | "see" | "walk" | "relax" | "travel" | "sail";
 
@@ -87,6 +89,13 @@ export interface HotelOption {
   roomRecommendation: string;
   rateNote: string;
   bestFor: string[];
+  role: HotelRole;
+  rating: number;
+  ratingScale: 5 | 10;
+  reviewCount: number;
+  reviewSource: string;
+  reviewUrl: string;
+  verified: boolean;
 }
 
 export interface Stay {
@@ -120,7 +129,12 @@ export interface BoatExcursion {
   valueBudget: number;
   valueVessel: string;
   priceSourceUrl: string;
+  priceSourceName: string;
   priceRationale: string;
+  rating: number;
+  reviewCount: number;
+  excludes: string[];
+  verified: boolean;
 }
 
 export interface CostCategory {
@@ -145,6 +159,7 @@ export interface TripState {
   boats: BoatExcursion[];
   costs: CostCategory[];
   contingencyPercent: number;
+  budgetTarget: number;
   taxSettings: {
     cityTaxPerPersonNight: number;
     boatVatPercent: number;
@@ -186,6 +201,7 @@ export type TripAction =
   | { type: "add-cost" }
   | { type: "delete-cost"; id: string }
   | { type: "set-contingency"; value: number }
+  | { type: "set-budget-target"; value: number }
   | { type: "update-tax-settings"; patch: Partial<TripState["taxSettings"]> }
   | { type: "update-destination"; id: string; patch: Partial<Destination> }
   | { type: "add-destination"; patch?: Partial<Destination> }

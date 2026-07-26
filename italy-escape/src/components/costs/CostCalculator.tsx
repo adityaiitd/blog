@@ -2,6 +2,7 @@
 
 import { Plus, Trash2 } from "lucide-react";
 import { EditableNumber, EditableText, Field } from "@/components/edit/Editable";
+import { BudgetTarget } from "./BudgetTarget";
 import { useTrip } from "@/components/site/TripProvider";
 import { Button } from "@/components/ui/Button";
 import { calculateCosts, hotelTotal, hotelsTotal, money } from "@/lib/costCalculator";
@@ -19,6 +20,7 @@ export function CostCalculator() {
           <Field label="Contingency"><EditableNumber value={state.contingencyPercent} max={100} onChange={(value) => dispatch({ type: "set-contingency", value })} label="Contingency percentage" suffix="%" /></Field>
         </div>
       </div>
+      <div className="mb-12"><BudgetTarget /></div>
       <section className="mb-12 border-y border-[var(--line)] py-6">
         <p className="eyebrow mb-4">Taxes & fees — included in every scenario</p>
         <div className="grid gap-4 sm:grid-cols-3">

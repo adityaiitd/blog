@@ -31,12 +31,12 @@ export default function TripMapClient() {
   const tile = resolvedTheme === "dark" ? "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png" : "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png";
   const hotelSelection = selected?.kind === "hotel" ? state.hotels.find((hotel) => hotel.id === selected.id) : undefined;
   const boatSelection = selected?.kind === "boat" ? state.boats.find((boat) => boat.id === selected.id) : undefined;
-  let offset = 1;
-  const staysWithDates = state.stays.map((stay) => {
-    const start = offset; offset += stay.nights;
-    return { stay, start, end: offset };
+  const staysWithDates = state.stays.map((stay, index) => {
+    const start = 1 + state.stays.slice(0, index).reduce((sum, previous) => sum + previous.nights, 0);
+    return { stay, start, end: start + stay.nights };
   });
   return (
+    <div className="grid gap-5 lg:grid-cols-[1fr_20rem]">
     <div className="relative h-[76vh] min-h-[600px] overflow-hidden">
       <MapContainer center={[41.4, 11.4]} zoom={6} className="h-full w-full">
         <TileLayer url={tile} attribution="&copy; OpenStreetMap &copy; CARTO" />
@@ -71,6 +71,30 @@ export default function TripMapClient() {
         {hotelSelection && (() => { const stay = state.stays.find((item) => item.hotelId === hotelSelection.id); return <><EditableText value={hotelSelection.name} onChange={(name) => dispatch({ type: "update-hotel", id: hotelSelection.id, patch: { name } })} label="Hotel name" className="font-serif text-3xl" /><div className="mt-5 grid grid-cols-2 gap-4"><Field label="Nightly rate"><EditableNumber value={hotelSelection.nightlyRate} onChange={(nightlyRate) => dispatch({ type: "update-hotel", id: hotelSelection.id, patch: { nightlyRate } })} label="Nightly rate" prefix="$" /></Field><div><p className="eyebrow">Stay total</p><strong>{money(hotelTotal(hotelSelection, stay?.nights ?? 0))}</strong></div></div></>; })()}
         {boatSelection && (() => { const tier = state.stays.find((stay) => stay.region === boatSelection.region)?.tier ?? "luxury"; return <><EditableText value={boatSelection.name} onChange={(name) => dispatch({ type: "update-boat", id: boatSelection.id, patch: { name } })} label="Boat name" className="font-serif text-3xl" /><p className="mt-2 text-sm text-[var(--muted)]">{boatSelection.departureTime}–{boatSelection.returnTime} · {tier === "value" ? boatSelection.valueVessel : boatSelection.vesselType}</p><div className="mt-5"><Field label={`Charter budget · ${tier}`}><EditableNumber value={tier === "value" ? boatSelection.valueBudget : boatSelection.budget} onChange={(value) => dispatch({ type: "update-boat", id: boatSelection.id, patch: tier === "value" ? { valueBudget: value } : { budget: value } })} label="Boat budget" prefix="$" /></Field></div></>; })()}
       </aside>}
+    </div>
+    <aside className="max-h-[76vh] overflow-y-auto border border-[var(--line)] p-4" aria-label="Trip stops">
+      <p className="eyebrow mb-3">Where you sleep</p>
+      {staysWithDates.map(({ stay, start, end }) => {
+        const ids = [...new Set(stay.nightHotelIds?.length ? stay.nightHotelIds : [stay.hotelId])];
+        return <div key={stay.id} className="mb-4 border-t border-[var(--line)] pt-3">
+          <p className="text-[10px] uppercase tracking-wider text-[var(--muted)]">{format(addDays(parseISO(state.startDate), start), "MMM d")}–{format(addDays(parseISO(state.startDate), end), "MMM d")}</p>
+          {ids.map((id) => {
+            const hotel = state.hotels.find((item) => item.id === id);
+            const nights = (stay.nightHotelIds ?? []).filter((value) => value === id).length || stay.nights;
+            return hotel && <button key={id} onClick={() => setSelected({ kind: "hotel", id })} className={`mt-2 block w-full text-left text-sm ${hotelSelection?.id === id ? "font-semibold text-[var(--ink)]" : "text-[var(--muted)]"}`}>
+              {hotel.name}<span className="block text-xs">{nights} {nights === 1 ? "night" : "nights"} · {money(hotel.nightlyRate)}/night</span>
+            </button>;
+          })}
+        </div>;
+      })}
+      <p className="eyebrow mb-3 mt-6">Days at sea</p>
+      {state.boats.map((boat) => {
+        const day = state.days.find((item) => item.id === boat.dayId);
+        return <button key={boat.id} onClick={() => setSelected({ kind: "boat", id: boat.id })} className={`mb-3 block w-full border-t border-[var(--line)] pt-3 text-left text-sm ${boatSelection?.id === boat.id ? "font-semibold text-[var(--ink)]" : "text-[var(--muted)]"}`}>
+          {boat.name}<span className="block text-xs">{day ? format(addDays(parseISO(state.startDate), day.offset), "EEE, MMM d") : ""} · {money(boat.budget)}</span>
+        </button>;
+      })}
+    </aside>
     </div>
   );
 }

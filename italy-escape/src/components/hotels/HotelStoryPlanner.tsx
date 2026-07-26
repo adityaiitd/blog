@@ -2,25 +2,100 @@
 
 import Image from "next/image";
 import { addDays, format, parseISO } from "date-fns";
-import { ExternalLink, Eye, Hotel, Sparkles, Waves } from "lucide-react";
+import { Anchor, ExternalLink, Sparkles, Waves } from "lucide-react";
 import { useTrip } from "@/components/site/TripProvider";
 import { Button } from "@/components/ui/Button";
+import { ReviewBadge, VerifyChip } from "@/components/ui/VerifyChip";
 import { EditableNumber } from "@/components/edit/Editable";
 import { hotelTotal, hotelsTotal, money } from "@/lib/costCalculator";
-import type { HotelOption } from "@/lib/types";
+import { recommendedNightAssignments } from "@/lib/splitStay";
+import type { HotelOption, Stay } from "@/lib/types";
+import { cn } from "@/lib/utils";
 
-function HotelCard({ hotel, selected, nights, onSelect, onRateChange }: { hotel: HotelOption; selected: boolean; nights: number; onSelect: () => void; onRateChange: (value: number) => void }) {
+const regionIntro: Record<string, string> = {
+  Sardinia: "Three nights living well at the resort, then two harbour nights for the sailing days.",
+  Tuscany: "One base for all four nights, so you unpack once and use the pool and spa properly.",
+  "Amalfi Coast": "Arrive and sail from a harbour-side base, then move up to the cliffside pool for the last two nights.",
+};
+
+function HotelCard({ hotel, nightsUsed, onSelect, onRateChange }: {
+  hotel: HotelOption; nightsUsed: number; onSelect: () => void; onRateChange: (value: number) => void;
+}) {
+  const inUse = nightsUsed > 0;
   return (
-    <article className={`overflow-hidden border ${selected ? "border-[var(--ink)]" : "border-[var(--line)]"}`}>
-      <div className="relative h-52"><Image src={hotel.image} alt={`Editorial destination view for ${hotel.region}`} fill sizes="(min-width:1024px) 30vw,100vw" className="object-cover" /><div className="absolute inset-0 bg-black/15" /><span className="absolute left-4 top-4 rounded-full bg-[color:var(--paper)] px-3 py-1 text-[9px] uppercase tracking-wider">{hotel.tier}</span></div>
+    <article className={cn("overflow-hidden border transition", inUse ? "border-[var(--ink)]" : "border-[var(--line)]")}>
+      <div className="relative h-48">
+        <Image src={hotel.image} alt={`${hotel.region} landscape`} fill sizes="(min-width:1280px) 28vw, 100vw" className="object-cover" />
+        <div className="absolute inset-0 bg-black/20" />
+        <span className="absolute left-4 top-4 flex items-center gap-1 rounded-full bg-[var(--paper)] px-3 py-1 text-[9px] uppercase tracking-wider">
+          {hotel.role === "boat-base" ? <Anchor size={11} /> : <Sparkles size={11} />}
+          {hotel.role === "boat-base" ? "Boat-day base" : "Signature stay"}
+        </span>
+        {inUse && <span className="on-ink absolute right-4 top-4 rounded-full bg-[var(--ink)] px-3 py-1 text-[9px] uppercase tracking-wider">{nightsUsed} {nightsUsed === 1 ? "night" : "nights"}</span>}
+      </div>
       <div className="p-5">
-        <div className="flex items-start justify-between gap-3"><div><h3 className="font-serif text-2xl">{hotel.name}</h3><p className="mt-1 text-xs text-[var(--muted)]">{hotel.viewSummary}</p></div><input type="radio" checked={selected} onChange={onSelect} aria-label={`Select ${hotel.name}`} /></div>
+        <h3 className="font-serif text-2xl">{hotel.name}</h3>
+        <div className="mt-2"><ReviewBadge rating={hotel.rating} scale={hotel.ratingScale} count={hotel.reviewCount} source={hotel.reviewSource} url={hotel.reviewUrl} /></div>
         <p className="mt-4 text-sm leading-6">{hotel.whyPick}</p>
-        <div className="mt-4 flex flex-wrap gap-2 text-[9px] uppercase tracking-wider">{hotel.pools.length > 0 && <span className="flex items-center gap-1 rounded-full bg-[var(--surface)] px-2 py-1"><Waves size={11} />{hotel.pools[0]}</span>}{hotel.rooftop && <span className="rounded-full bg-[var(--surface)] px-2 py-1">Rooftop</span>}{hotel.waterfront && <span className="rounded-full bg-[var(--surface)] px-2 py-1">Waterfront</span>}</div>
-        <div className="mt-5 border-t border-[var(--line)] pt-4"><p className="eyebrow">Room to price</p><p className="mt-1 text-sm font-medium">{hotel.roomRecommendation}</p><p className="mt-2 text-xs text-[var(--muted)]">{hotel.rateNote}</p></div>
-        <div className="mt-5 flex items-end justify-between gap-3"><div><EditableNumber value={hotel.nightlyRate} onChange={onRateChange} label={`${hotel.name} nightly rate`} prefix="$" suffix="/ night" className="w-40 font-serif text-xl" /><p className="mt-1 text-xs">{money(hotelTotal(hotel, nights))} for {nights} nights</p></div><div className="flex gap-2"><a href={hotel.roomsUrl} target="_blank" rel="noreferrer"><Button size="sm" variant="outline">Rooms <ExternalLink size={12} /></Button></a><a href={hotel.officialUrl} target="_blank" rel="noreferrer"><Button size="sm">Official site <ExternalLink size={12} /></Button></a></div></div>
+        <p className="mt-3 text-xs text-[var(--muted)]">{hotel.viewSummary}</p>
+        <div className="mt-3 flex flex-wrap gap-2 text-[9px] uppercase tracking-wider">
+          {hotel.pools.map((pool) => <span key={pool} className="flex items-center gap-1 rounded-full bg-[var(--surface)] px-2 py-1"><Waves size={11} />{pool}</span>)}
+          {hotel.rooftop && <span className="rounded-full bg-[var(--surface)] px-2 py-1">Rooftop</span>}
+          {hotel.waterfront && <span className="rounded-full bg-[var(--surface)] px-2 py-1">On the water</span>}
+        </div>
+        <div className="mt-5 border-t border-[var(--line)] pt-4">
+          <p className="eyebrow">Room to ask for</p>
+          <p className="mt-1 text-sm font-medium">{hotel.roomRecommendation}</p>
+          <p className="mt-2 text-xs text-[var(--muted)]">{hotel.rateNote}</p>
+        </div>
+        <div className="mt-5 flex flex-wrap items-end justify-between gap-3">
+          <div>
+            <EditableNumber value={hotel.nightlyRate} onChange={onRateChange} label={`${hotel.name} nightly rate`} prefix="$" suffix="/ night" className="w-40 font-serif text-xl" />
+            <div className="mt-2"><VerifyChip verified={hotel.verified} sourceName={hotel.reviewSource} sourceUrl={hotel.reviewUrl} /></div>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <Button size="sm" variant={inUse ? "primary" : "outline"} onClick={onSelect}>{inUse ? "In the plan" : "Use for this leg"}</Button>
+            <a href={hotel.roomsUrl} target="_blank" rel="noreferrer"><Button size="sm" variant="outline">Rooms <ExternalLink size={12} /></Button></a>
+          </div>
+        </div>
+        {inUse && <p className="mt-3 text-xs text-[var(--muted)]">{money(hotelTotal(hotel, nightsUsed))} for {nightsUsed} {nightsUsed === 1 ? "night" : "nights"}</p>}
       </div>
     </article>
+  );
+}
+
+function NightStrip({ stay, start }: { stay: Stay; start: number }) {
+  const { state, dispatch } = useTrip();
+  const options = state.hotels.filter((hotel) => hotel.region === stay.region);
+  const assignments = stay.nightHotelIds?.length ? stay.nightHotelIds : Array(stay.nights).fill(stay.hotelId);
+  const boatDayOffsets = new Set(state.boats
+    .filter((boat) => boat.region === stay.region)
+    .map((boat) => state.days.find((day) => day.id === boat.dayId)?.offset));
+  return (
+    <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-5">
+      {assignments.slice(0, stay.nights).map((hotelId, index) => {
+        const hotel = state.hotels.find((item) => item.id === hotelId) ?? options[0];
+        const offset = start + index;
+        const isBoatNight = boatDayOffsets.has(offset) || boatDayOffsets.has(offset + 1);
+        return (
+          <label key={index} className={cn("border p-3", isBoatNight ? "border-[var(--sea)] bg-[color:var(--surface)/.5]" : "border-[var(--line)]")}>
+            <span className="flex items-center justify-between text-[10px] uppercase tracking-wider text-[var(--muted)]">
+              {format(addDays(parseISO(state.startDate), offset), "EEE, MMM d")}
+              {isBoatNight && <Anchor size={11} className="text-[var(--sea)]" />}
+            </span>
+            <select
+              value={hotelId}
+              onChange={(event) => dispatch({ type: "assign-stay-night", stayId: stay.id, nightIndex: index, hotelId: event.target.value })}
+              aria-label={`Hotel for the night of ${format(addDays(parseISO(state.startDate), offset), "MMMM d")}`}
+              className="mt-2 w-full bg-transparent text-xs font-medium"
+            >
+              {options.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}
+            </select>
+            <span className="mt-1 block text-[11px] text-[var(--muted)]">{money(hotel?.nightlyRate ?? 0)}</span>
+          </label>
+        );
+      })}
+    </div>
   );
 }
 
@@ -31,33 +106,61 @@ export function HotelStoryPlanner() {
     stay,
     start: 1 + state.stays.slice(0, index).reduce((sum, previous) => sum + previous.nights, 0),
   }));
-  const applySmartSplit = (stayId: string) => {
-    const stay = state.stays.find((item) => item.id === stayId);
-    if (!stay) return;
-    const ids = stay.region === "Sardinia"
-      ? ["cala", "cala", "cala", "gabbiano", "gabbiano"]
-      : stay.region === "Amalfi Coast"
-        ? ["marina-riviera", "marina-riviera", "marina-riviera", "anantara", "anantara"]
-        : Array(stay.nights).fill(stay.hotelId);
-    ids.slice(0, stay.nights).forEach((hotelId, nightIndex) => dispatch({ type: "assign-stay-night", stayId, nightIndex, hotelId }));
-  };
+  const applyRecommended = (stay: Stay) =>
+    recommendedNightAssignments(stay, state).forEach((hotelId, nightIndex) =>
+      dispatch({ type: "assign-stay-night", stayId: stay.id, nightIndex, hotelId }));
+
   return (
     <>
-      <header className="mb-14 grid gap-8 md:grid-cols-[1fr_auto] md:items-end"><div><p className="eyebrow mb-4">Sleep beautifully, spend deliberately</p><h1 className="section-title">A hotel should earn<br />the hours you give it.</h1><p className="mt-6 max-w-2xl text-lg leading-8 text-[var(--muted)]">See the pool, the view, the room to request and exactly why each property belongs. Official links open real galleries and live rates.</p></div><div><p className="eyebrow">Current hotel plan</p><p className="font-serif text-5xl">{money(total)}</p></div></header>
-      <section className="mb-16 border-y border-[var(--line)] py-7">
-        <div className="grid gap-5 lg:grid-cols-[1fr_1fr_auto] lg:items-center"><div><p className="eyebrow">Smarter split-stay strategy</p><h2 className="mt-2 font-serif text-3xl">Pay for the resort when you are there.</h2></div><p className="text-sm leading-6 text-[var(--muted)]">One hotel move per coast: finish Sardinia near a practical boat base; begin Amalfi beside the harbour, then move to the infinity-pool hotel when the schedule slows.</p><div className="flex flex-wrap gap-2"><Button size="sm" onClick={() => applySmartSplit("stay-sardinia")}>Optimize Sardinia</Button><Button size="sm" onClick={() => applySmartSplit("stay-amalfi")}>Optimize Amalfi</Button></div></div>
-      </section>
+      <header className="mb-14 grid gap-8 md:grid-cols-[1fr_auto] md:items-end">
+        <div>
+          <p className="eyebrow mb-4">Sleep beautifully, spend deliberately</p>
+          <h1 className="section-title">Pay resort rates only<br />on resort days.</h1>
+          <p className="mt-6 max-w-2xl text-lg leading-8 text-[var(--muted)]">
+            Every night is assigned individually. Signature hotels hold the days you are actually there; harbour bases under $400 cover the days you leave at 09:30 and return at sunset.
+          </p>
+        </div>
+        <div>
+          <p className="eyebrow">Hotels in the current plan</p>
+          <p className="font-serif text-5xl">{money(total)}</p>
+        </div>
+      </header>
+
       {stayDates.map(({ stay, start }, regionIndex) => {
         const options = state.hotels.filter((hotel) => hotel.region === stay.region);
         const assignments = stay.nightHotelIds?.length ? stay.nightHotelIds : Array(stay.nights).fill(stay.hotelId);
-        return <section key={stay.id} className="mb-24">
-          <div className="mb-7 flex flex-wrap items-end justify-between gap-4"><div><p className="eyebrow">Chapter {regionIndex + 1}</p><h2 className="font-serif text-5xl">{stay.region}</h2></div><p className="max-w-lg text-sm text-[var(--muted)]">{stay.region === "Sardinia" ? "Use Cala di Volpe for resort and beach time; a lower-cost waterfront base makes more sense for the final two full boat days." : stay.region === "Tuscany" ? "Keep one base: unpack once. COMO’s pool and spa are used on two slower half-days, so the spend is defensible." : "Start walkable to Amalfi harbour for two boat days, then move once to Anantara for pool, spa and Ravello."}</p></div>
-          <div className="mb-8 grid gap-2 sm:grid-cols-2 lg:grid-cols-5">{assignments.map((hotelId, index) => { const hotel = state.hotels.find((item) => item.id === hotelId) ?? options[0]; return <label key={index} className="border border-[var(--line)] p-3"><span className="eyebrow">{format(addDays(parseISO(state.startDate), start + index), "EEE, MMM d")}</span><select value={hotelId} onChange={(event) => dispatch({ type: "assign-stay-night", stayId: stay.id, nightIndex: index, hotelId: event.target.value })} className="mt-2 w-full bg-transparent text-xs font-medium"><option value={hotel.id}>{hotel.name}</option>{options.filter((item) => item.id !== hotel.id).map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}</select></label>; })}</div>
-          <div className="mb-5 flex items-center gap-2 text-xs text-[var(--muted)]"><Eye size={14} />Editorial destination photography is shown here; use each official-site button for current property and room galleries.</div>
-          <div className="grid gap-6 xl:grid-cols-2">{options.map((hotel) => <HotelCard key={hotel.id} hotel={hotel} selected={assignments.includes(hotel.id)} nights={assignments.filter((id) => id === hotel.id).length || stay.nights} onSelect={() => dispatch({ type: "select-hotel", stayId: stay.id, hotelId: hotel.id })} onRateChange={(nightlyRate) => dispatch({ type: "update-hotel", id: hotel.id, patch: { nightlyRate } })} />)}</div>
-        </section>;
+        return (
+          <section key={stay.id} className="mb-24">
+            <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
+              <div>
+                <p className="eyebrow">Chapter {regionIndex + 1} · {stay.nights} nights</p>
+                <h2 className="font-serif text-5xl">{stay.region}</h2>
+              </div>
+              <div className="flex flex-wrap items-center gap-3">
+                <p className="text-sm">{money(hotelsTotal(state.hotels, [stay]))}</p>
+                <Button size="sm" variant="outline" onClick={() => applyRecommended(stay)}>Use recommended split</Button>
+              </div>
+            </div>
+            <p className="mb-6 max-w-3xl text-sm leading-6 text-[var(--muted)]">{regionIntro[stay.region]}</p>
+            <NightStrip stay={stay} start={start} />
+            <div className="mt-8 grid gap-6 xl:grid-cols-2">
+              {options.map((hotel) => (
+                <HotelCard
+                  key={hotel.id}
+                  hotel={hotel}
+                  nightsUsed={assignments.filter((id) => id === hotel.id).length}
+                  onSelect={() => dispatch({ type: "select-hotel", stayId: stay.id, hotelId: hotel.id })}
+                  onRateChange={(nightlyRate) => dispatch({ type: "update-hotel", id: hotel.id, patch: { nightlyRate } })}
+                />
+              ))}
+            </div>
+          </section>
+        );
       })}
-      <footer className="flex items-center gap-2 border-t border-[var(--line)] pt-6 text-xs text-[var(--muted)]"><Sparkles size={14} /><Hotel size={14} />Rates are planning estimates, not live quotes. Verify room, view, taxes and cancellation terms on the linked official site.</footer>
+
+      <footer className="border-t border-[var(--line)] pt-6 text-xs leading-6 text-[var(--muted)]">
+        Photography here is original destination artwork, not hotel imagery. Ratings link to their source and rates are planning estimates: confirm room, view, taxes and cancellation terms on each hotel’s own site before booking.
+      </footer>
     </>
   );
 }

@@ -15,6 +15,7 @@ const tripSchema = z.object({
   boats: z.array(z.any()),
   costs: z.array(z.any()),
   contingencyPercent: z.number(),
+  budgetTarget: z.number().optional(),
   taxSettings: z.any().optional(),
 });
 

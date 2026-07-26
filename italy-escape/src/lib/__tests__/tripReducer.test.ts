@@ -26,7 +26,19 @@ describe("trip reducer", () => {
   it("switches only the requested region to its recommended value hotel", () => {
     const state = freshInitialTripState();
     const next = tripReducer(state, { type: "set-region-tier", stayId: "stay-amalfi", tier: "value" });
-    expect(next.stays.find((stay) => stay.id === "stay-amalfi")).toMatchObject({ tier: "value", hotelId: "marina-riviera" });
+    expect(next.stays.find((stay) => stay.id === "stay-amalfi")).toMatchObject({ tier: "value", hotelId: "ferraioli" });
     expect(next.stays.find((stay) => stay.id === "stay-sardinia")?.tier).toBe("luxury");
+  });
+
+  it("assigns a single night without disturbing the rest of the stay", () => {
+    const state = freshInitialTripState();
+    const next = tripReducer(state, { type: "assign-stay-night", stayId: "stay-sardinia", nightIndex: 0, hotelId: "piccada" });
+    expect(next.stays[0].nightHotelIds).toEqual(["piccada", "cala", "cala", "vecchia-fonte", "vecchia-fonte"]);
+  });
+
+  it("clamps the budget target to a sane range", () => {
+    const state = freshInitialTripState();
+    expect(tripReducer(state, { type: "set-budget-target", value: -50 }).budgetTarget).toBe(0);
+    expect(tripReducer(state, { type: "set-budget-target", value: 42000 }).budgetTarget).toBe(42000);
   });
 });

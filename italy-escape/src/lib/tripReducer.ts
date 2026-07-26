@@ -105,7 +105,7 @@ export function tripReducer(state: TripState, action: TripAction): TripState {
         return { ...stay, hotelId: action.hotelId, tier, nightHotelIds: Array(stay.nights).fill(action.hotelId) };
       }) };
     case "add-hotel": {
-      const hotel: HotelOption = { id: uid("hotel"), region: action.region, name: "New hotel option", nightlyRate: 1000, roomMultipliers: { entry: 1, "sea-view": 1.25, suite: 1.75 }, selectedRoom: "entry", refundablePremium: 0, taxRate: 0, complimentaryNights: 0, tier: "luxury", officialUrl: "", roomsUrl: "", image: action.region === "Sardinia" ? "/images/costa-smeralda.webp" : action.region === "Tuscany" ? "/images/tuscany.webp" : "/images/amalfi.webp", pools: [], viewSummary: "Add view details", rooftop: false, waterfront: false, whyPick: "Add why this hotel belongs in the plan.", roomRecommendation: "Add a room recommendation", rateNote: "Verify the live rate directly.", bestFor: [] };
+      const hotel: HotelOption = { id: uid("hotel"), region: action.region, name: "New hotel option", nightlyRate: 1000, roomMultipliers: { entry: 1, "sea-view": 1.25, suite: 1.75 }, selectedRoom: "entry", refundablePremium: 0, taxRate: 0, complimentaryNights: 0, tier: "luxury", officialUrl: "", roomsUrl: "", image: action.region === "Sardinia" ? "/images/costa-smeralda.webp" : action.region === "Tuscany" ? "/images/tuscany.webp" : "/images/amalfi.webp", pools: [], viewSummary: "Add view details", rooftop: false, waterfront: false, whyPick: "Add why this hotel belongs in the plan.", roomRecommendation: "Add a room recommendation", rateNote: "Verify the live rate directly.", bestFor: [], role: "signature", rating: 0, ratingScale: 5, reviewCount: 0, reviewSource: "Tripadvisor", reviewUrl: "https://www.tripadvisor.com/", verified: false };
       return { ...state, hotels: [...state.hotels, hotel] };
     }
     case "delete-hotel":
@@ -120,6 +120,7 @@ export function tripReducer(state: TripState, action: TripAction): TripState {
     }
     case "delete-cost": return { ...state, costs: state.costs.filter((cost) => cost.id !== action.id) };
     case "set-contingency": return { ...state, contingencyPercent: clamp(action.value, 0, 100) };
+    case "set-budget-target": return { ...state, budgetTarget: clamp(action.value, 0, 500_000) };
     case "update-tax-settings": return { ...state, taxSettings: { ...state.taxSettings, ...action.patch } };
     case "update-destination":
       return { ...state, destinations: state.destinations.map((destination) => destination.id === action.id ? { ...destination, ...action.patch } : destination) };

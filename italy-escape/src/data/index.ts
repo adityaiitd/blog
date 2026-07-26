@@ -21,7 +21,8 @@ export const initialTripState: TripState = {
   days: itinerary,
   boats: boatTrips,
   costs,
-  contingencyPercent: 10,
+  contingencyPercent: 7,
+  budgetTarget: 35000,
   taxSettings: {
     cityTaxPerPersonNight: 5.5,
     boatVatPercent: 10,

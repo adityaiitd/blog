@@ -1,12 +1,26 @@
 import { describe, expect, it } from "vitest";
 import { freshInitialTripState } from "@/data";
-import { calculateCosts, hotelTotal, hotelsTotal, internationalFlightsTotal, taxesTotal } from "../costCalculator";
+import { calculateCosts, fitToTarget, hotelTotal, hotelsTotal, internationalFlightsTotal, taxesTotal } from "../costCalculator";
 import { tripReducer } from "../tripReducer";
 
 describe("cost calculator", () => {
-  it("matches the initial hotel benchmark", () => {
+  it("prices the seeded split stays night by night", () => {
     const state = freshInitialTripState();
-    expect(hotelsTotal(state.hotels, state.stays)).toBe(22569);
+    // Sardinia 3 resort + 2 harbour nights, Tuscany one base, Amalfi 3 harbour + 2 resort nights.
+    expect(hotelsTotal(state.hotels, [state.stays[0]])).toBe(3 * 1927 + 2 * 280);
+    expect(hotelsTotal(state.hotels, [state.stays[1]])).toBe(4 * 861);
+    expect(hotelsTotal(state.hotels, [state.stays[2]])).toBe(3 * 350 + 2 * 1898);
+    expect(hotelsTotal(state.hotels, state.stays)).toBe(14631);
+  });
+
+  it("keeps every boat-base hotel under the $400 nightly ceiling", () => {
+    const bases = freshInitialTripState().hotels.filter((hotel) => hotel.role === "boat-base");
+    expect(bases.length).toBeGreaterThan(0);
+    bases.forEach((hotel) => {
+      expect(hotel.nightlyRate).toBeLessThanOrEqual(400);
+      expect(hotel.verified).toBe(true);
+      expect(hotel.reviewCount).toBeGreaterThan(100);
+    });
   });
 
   it("applies room level, premium, tax and complimentary nights", () => {
@@ -29,27 +43,31 @@ describe("cost calculator", () => {
 
   it("calculates city tax, boat VAT and dining service explicitly", () => {
     const state = freshInitialTripState();
-    const expected = 14 * 2 * 5.5 + 6900 * .1 + 6500 * .1;
-    expect(taxesTotal(state)).toBe(expected);
+    const charters = state.boats.reduce((sum, boat) => sum + boat.budget, 0);
+    expect(taxesTotal(state)).toBe(14 * 2 * 5.5 + charters * .1 + 5600 * .1);
   });
 
-  it("saves roughly twenty to thirty percent when one leg moves to value", () => {
-    const luxury = freshInitialTripState();
-    const value = tripReducer(luxury, { type: "set-region-tier", stayId: "stay-amalfi", tier: "value" });
-    const luxuryTotal = calculateCosts(luxury).subtotal;
-    const valueTotal = calculateCosts(value).subtotal;
-    expect(valueTotal).toBeLessThan(luxuryTotal);
-    const regionLuxury = 1898 * 5 + 1800 + 200 + 1500 + 150;
-    const regionValue = 1400 * 5 + 1100 + 200 + 900 + 150;
-    expect((regionLuxury - regionValue) / regionLuxury).toBeGreaterThan(.2);
-    expect((regionLuxury - regionValue) / regionLuxury).toBeLessThan(.3);
+  it("keeps the seeded trip under the $35,000 target for two people", () => {
+    const status = fitToTarget(freshInitialTripState());
+    expect(status.target).toBe(35000);
+    expect(status.withinTarget).toBe(true);
+    expect(status.total).toBeLessThan(35000);
+    expect(status.total).toBeGreaterThan(30000);
   });
 
-  it("prices split stays night by night", () => {
-    let state = freshInitialTripState();
-    ["cala", "cala", "cala", "gabbiano", "gabbiano"].forEach((hotelId, nightIndex) => {
-      state = tripReducer(state, { type: "assign-stay-night", stayId: "stay-sardinia", nightIndex, hotelId });
-    });
-    expect(hotelsTotal(state.hotels, state.stays)).toBe(3 * 1927 + 2 * 1300 + 4 * 861 + 5 * 1898);
+  it("ranks levers by savings and each one actually reduces the total", () => {
+    const state = freshInitialTripState();
+    const { levers } = fitToTarget(state);
+    expect(levers.length).toBeGreaterThan(0);
+    expect(levers.map((lever) => lever.savings)).toEqual([...levers.map((lever) => lever.savings)].sort((a, b) => b - a));
+    const applied = levers[0].actions.reduce(tripReducer, state);
+    expect(calculateCosts(applied).baseline).toBeLessThan(calculateCosts(state).baseline);
+  });
+
+  it("reports the shortfall when the target is lowered below the plan", () => {
+    const state = { ...freshInitialTripState(), budgetTarget: 25000 };
+    const status = fitToTarget(state);
+    expect(status.withinTarget).toBe(false);
+    expect(status.difference).toBeGreaterThan(0);
   });
 });
