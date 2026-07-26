@@ -8,7 +8,7 @@ const page = await browser.newPage({ viewport: { width: 1440, height: 1000 }, de
 const runtimeErrors = [];
 page.on("pageerror", (error) => runtimeErrors.push(error.message));
 page.on("console", (message) => { if (message.type() === "error") runtimeErrors.push(message.text()); });
-for (const [name, path] of [["journey", "/"], ["map", "/map"], ["value", "/value"], ["itinerary", "/itinerary"], ["hotels", "/hotels"], ["budget", "/costs"]]) {
+for (const [name, path] of [["journey", "/"], ["map", "/map"], ["value", "/value"], ["itinerary", "/itinerary"], ["hotels", "/hotels"], ["boats", "/boats"], ["budget", "/costs"]]) {
   await page.goto(`${base}${path}`, { waitUntil: "networkidle" });
   await page.screenshot({ path: `screenshots/${name}-desktop.png`, fullPage: true });
 }
