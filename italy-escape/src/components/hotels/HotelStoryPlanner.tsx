@@ -27,8 +27,10 @@ function HotelCard({ hotel, selected, nights, onSelect, onRateChange }: { hotel:
 export function HotelStoryPlanner() {
   const { state, dispatch } = useTrip();
   const total = hotelsTotal(state.hotels, state.stays);
-  let startOffset = 1;
-  const stayDates = state.stays.map((stay) => { const start = startOffset; startOffset += stay.nights; return { stay, start }; });
+  const stayDates = state.stays.map((stay, index) => ({
+    stay,
+    start: 1 + state.stays.slice(0, index).reduce((sum, previous) => sum + previous.nights, 0),
+  }));
   const applySmartSplit = (stayId: string) => {
     const stay = state.stays.find((item) => item.id === stayId);
     if (!stay) return;
