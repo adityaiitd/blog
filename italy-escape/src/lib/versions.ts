@@ -22,5 +22,13 @@ export function diffTrips(before: TripState, after: TripState): TripDiff[] {
   const oldActivities = before.days.reduce((sum, day) => sum + day.activities.length, 0);
   const newActivities = after.days.reduce((sum, day) => sum + day.activities.length, 0);
   if (oldActivities !== newActivities) diffs.push({ label: "Activities", before: String(oldActivities), after: String(newActivities) });
+  const oldTiers = before.stays.map((stay) => `${stay.region}: ${stay.tier ?? "luxury"}`).join(", ");
+  const newTiers = after.stays.map((stay) => `${stay.region}: ${stay.tier ?? "luxury"}`).join(", ");
+  if (oldTiers !== newTiers) diffs.push({ label: "Plan tier", before: oldTiers, after: newTiers });
+  const oldBoats = before.boats.map((boat) => `${boat.dayId}:${boat.budget}`).join("|");
+  const newBoats = after.boats.map((boat) => `${boat.dayId}:${boat.budget}`).join("|");
+  if (oldBoats !== newBoats) diffs.push({ label: "Boat plans", before: "Previous schedule", after: "Dates or budgets updated" });
+  if (before.travelers !== after.travelers) diffs.push({ label: "Travelers", before: String(before.travelers), after: String(after.travelers) });
+  if (before.contingencyPercent !== after.contingencyPercent) diffs.push({ label: "Contingency", before: `${before.contingencyPercent}%`, after: `${after.contingencyPercent}%` });
   return diffs;
 }

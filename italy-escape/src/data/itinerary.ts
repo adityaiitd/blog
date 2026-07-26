@@ -1,7 +1,10 @@
 import type { Activity, ItineraryDay } from "@/lib/types";
 
 const a = (id: string, title: string, extras: Partial<Activity> = {}): Activity => ({
-  id, title, cost: 0, booked: false, weatherDependent: false, ...extras,
+  id, title, cost: 0, booked: false, weatherDependent: false,
+  venue: extras.boatId ? "boat" : /flight|transfer|train|car to/i.test(title) ? "transit" : /hotel|pool|spa|resort/i.test(title) ? "hotel" : "public",
+  entryFee: 0,
+  ...extras,
 });
 
 export const itinerary: ItineraryDay[] = [

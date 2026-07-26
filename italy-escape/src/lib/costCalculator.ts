@@ -18,11 +18,33 @@ export function hotelsTotal(hotels: HotelOption[], stays: Stay[]) {
 }
 
 export function boatsTotal(state: TripState) {
-  return state.boats.reduce((sum, boat) => sum + boat.budget + boat.gratuity, 0);
+  return state.boats.reduce((sum, boat) => {
+    const tier = state.stays.find((stay) => stay.region === boat.region)?.tier ?? "luxury";
+    return sum + (tier === "value" ? boat.valueBudget : boat.budget) + boat.gratuity;
+  }, 0);
 }
 
 export function transportTotal(state: TripState) {
   return state.routeLegs.reduce((sum, leg) => sum + (Number.isFinite(leg.cost) ? leg.cost : 0), 0);
+}
+
+export function internationalFlightsTotal(state: TripState) {
+  return state.routeLegs
+    .filter((leg) => leg.mode === "international-flight")
+    .reduce((sum, leg) => sum + (leg.pricePerPerson ?? 0) * state.travelers, 0);
+}
+
+export function taxesTotal(state: TripState) {
+  const cityTax = state.stays.reduce((sum, stay) => sum + stay.nights, 0)
+    * state.travelers * state.taxSettings.cityTaxPerPersonNight;
+  const boatBase = state.boats.reduce((sum, boat) => {
+    const tier = state.stays.find((stay) => stay.region === boat.region)?.tier ?? "luxury";
+    return sum + (tier === "value" ? boat.valueBudget : boat.budget);
+  }, 0);
+  const boatVat = boatBase * state.taxSettings.boatVatPercent / 100;
+  const dining = state.costs.find((category) => category.id === "restaurants")?.amount ?? 0;
+  const diningService = dining * state.taxSettings.diningServicePercent / 100;
+  return cityTax + boatVat + diningService;
 }
 
 export function categoryAmount(category: CostCategory, state: TripState) {
@@ -33,6 +55,8 @@ export function categoryAmount(category: CostCategory, state: TripState) {
       .filter((leg) => leg.mode === "private-car")
       .reduce((sum, leg) => sum + leg.cost, 0);
   }
+  if (category.derived === "international-flights") return internationalFlightsTotal(state);
+  if (category.derived === "taxes") return taxesTotal(state);
   return category.amount ?? 0;
 }
 

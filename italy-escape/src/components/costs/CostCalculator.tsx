@@ -5,6 +5,7 @@ import { EditableNumber, EditableText, Field } from "@/components/edit/Editable"
 import { useTrip } from "@/components/site/TripProvider";
 import { Button } from "@/components/ui/Button";
 import { calculateCosts, hotelTotal, money } from "@/lib/costCalculator";
+import type { RouteLeg } from "@/lib/types";
 
 export function CostCalculator() {
   const { state, dispatch } = useTrip();
@@ -18,10 +19,28 @@ export function CostCalculator() {
           <Field label="Contingency"><EditableNumber value={state.contingencyPercent} max={100} onChange={(value) => dispatch({ type: "set-contingency", value })} label="Contingency percentage" suffix="%" /></Field>
         </div>
       </div>
+      <section className="mb-12 border-y border-[var(--line)] py-6">
+        <p className="eyebrow mb-4">Taxes & fees — included in every scenario</p>
+        <div className="grid gap-4 sm:grid-cols-3">
+          <Field label="Hotel city tax · person/night"><EditableNumber value={state.taxSettings.cityTaxPerPersonNight} onChange={(cityTaxPerPersonNight) => dispatch({ type: "update-tax-settings", patch: { cityTaxPerPersonNight } })} label="City tax per person per night" prefix="$" /></Field>
+          <Field label="Boat charter VAT"><EditableNumber value={state.taxSettings.boatVatPercent} max={100} onChange={(boatVatPercent) => dispatch({ type: "update-tax-settings", patch: { boatVatPercent } })} label="Boat VAT" suffix="%" /></Field>
+          <Field label="Restaurant service"><EditableNumber value={state.taxSettings.diningServicePercent} max={100} onChange={(diningServicePercent) => dispatch({ type: "update-tax-settings", patch: { diningServicePercent } })} label="Restaurant service charge" suffix="%" /></Field>
+        </div>
+      </section>
       <section className="mb-16 grid gap-px bg-[var(--line)] sm:grid-cols-3">
         <div className="bg-[var(--paper)] p-7"><p className="eyebrow">Baseline</p><p className="mt-4 font-serif text-5xl">{money(summary.baseline)}</p><p className="mt-2 text-xs text-[var(--muted)]">Current choices + contingency</p></div>
         <div className="bg-[var(--ink)] p-7 text-[var(--paper)]"><p className="eyebrow !text-[var(--paper)]/65">Recommended</p><p className="mt-4 font-serif text-5xl">{money(summary.recommended)}</p><p className="mt-2 text-xs opacity-65">Space for considered upgrades</p></div>
         <div className="bg-[var(--paper)] p-7"><p className="eyebrow">Splurge</p><p className="mt-4 font-serif text-5xl">{money(summary.splurge)}</p><p className="mt-2 text-xs text-[var(--muted)]">Premium scenario multipliers</p></div>
+      </section>
+      <section className="mb-16">
+        <div className="mb-5"><p className="eyebrow mb-2">Flights</p><h2 className="font-serif text-4xl">Economy, door to door</h2></div>
+        {state.routeLegs.filter((leg) => leg.mode.includes("flight")).map((leg) => (
+          <div key={leg.id} className="grid gap-3 border-t border-[var(--line)] py-4 sm:grid-cols-[1fr_12rem_10rem] sm:items-center">
+            <div><p className="font-medium">{state.destinations.find((place) => place.id === leg.fromId)?.shortName} → {state.destinations.find((place) => place.id === leg.toId)?.shortName}</p><p className="text-xs text-[var(--muted)]">{leg.details}</p></div>
+            <select value={leg.cabin ?? "economy"} onChange={(event) => dispatch({ type: "update-route", id: leg.id, patch: { cabin: event.target.value as RouteLeg["cabin"] } })} className="rounded-md bg-transparent p-2 text-sm"><option value="economy">Economy</option><option value="premium-economy">Premium economy</option><option value="business">Business</option></select>
+            <EditableNumber value={leg.pricePerPerson ?? 0} onChange={(pricePerPerson) => dispatch({ type: "update-route", id: leg.id, patch: { pricePerPerson } })} label="Flight price per person" prefix="$" suffix="/ person" />
+          </div>
+        ))}
       </section>
       <section className="mb-16">
         <div className="mb-3 flex h-4 overflow-hidden rounded-full bg-[var(--surface)]" aria-label="Budget allocation">

@@ -3,6 +3,8 @@ export type TransportMode = "international-flight" | "internal-flight" | "privat
 export type BookingStatus = "idea" | "requested" | "booked";
 export type RoomLevel = "entry" | "sea-view" | "suite";
 export type WeatherStatus = "forecast-pending" | "go" | "watch" | "cancelled";
+export type TripTier = "luxury" | "value";
+export type ActivityVenue = "hotel" | "boat" | "public" | "transit";
 
 export interface Destination {
   id: string;
@@ -13,6 +15,7 @@ export interface Destination {
   lng: number;
   region: string;
   image?: string;
+  waypoint?: boolean;
 }
 
 export interface RouteLeg {
@@ -26,6 +29,8 @@ export interface RouteLeg {
   details: string;
   cost: number;
   status: BookingStatus;
+  cabin?: "economy" | "premium-economy" | "business";
+  pricePerPerson?: number;
 }
 
 export interface Activity {
@@ -40,6 +45,8 @@ export interface Activity {
   notes?: string;
   weatherDependent: boolean;
   boatId?: string;
+  venue: ActivityVenue;
+  entryFee?: number;
 }
 
 export interface ItineraryDay {
@@ -65,6 +72,7 @@ export interface HotelOption {
   taxRate: number;
   complimentaryNights: number;
   recommended?: boolean;
+  tier: TripTier;
 }
 
 export interface Stay {
@@ -73,6 +81,7 @@ export interface Stay {
   destinationId: string;
   hotelId: string;
   nights: number;
+  tier: TripTier;
 }
 
 export interface BoatExcursion {
@@ -92,6 +101,9 @@ export interface BoatExcursion {
   budget: number;
   gratuity: number;
   status: BookingStatus;
+  waypointIds: string[];
+  valueBudget: number;
+  valueVessel: string;
 }
 
 export interface CostCategory {
@@ -100,7 +112,7 @@ export interface CostCategory {
   amount: number | null;
   scenarioMultiplier: number;
   color: string;
-  derived?: "hotels" | "boats" | "transport";
+  derived?: "hotels" | "boats" | "transport" | "international-flights" | "taxes";
 }
 
 export interface TripState {
@@ -116,6 +128,11 @@ export interface TripState {
   boats: BoatExcursion[];
   costs: CostCategory[];
   contingencyPercent: number;
+  taxSettings: {
+    cityTaxPerPersonNight: number;
+    boatVatPercent: number;
+    diningServicePercent: number;
+  };
 }
 
 export type ShareableTripState = TripState;
@@ -125,6 +142,8 @@ export interface TripVersion {
   name: string;
   createdAt: string;
   state: TripState;
+  pinned?: boolean;
+  summary?: string;
 }
 
 export type TripAction =
@@ -133,12 +152,13 @@ export type TripAction =
   | { type: "set-title"; value: string }
   | { type: "set-travelers"; value: number }
   | { type: "update-day"; id: string; patch: Partial<ItineraryDay> }
-  | { type: "add-activity"; dayId: string }
+  | { type: "add-activity"; dayId: string; patch?: Partial<Activity> }
   | { type: "update-activity"; dayId: string; activityId: string; patch: Partial<Activity> }
   | { type: "delete-activity"; dayId: string; activityId: string }
   | { type: "move-activity"; fromDayId: string; toDayId: string; activityId: string }
   | { type: "reorder-days"; activeId: string; overId: string }
   | { type: "update-stay"; id: string; patch: Partial<Stay> }
+  | { type: "set-region-tier"; stayId: string; tier: TripTier }
   | { type: "update-hotel"; id: string; patch: Partial<HotelOption> }
   | { type: "select-hotel"; stayId: string; hotelId: string }
   | { type: "add-hotel"; region: string }
@@ -148,6 +168,7 @@ export type TripAction =
   | { type: "add-cost" }
   | { type: "delete-cost"; id: string }
   | { type: "set-contingency"; value: number }
+  | { type: "update-tax-settings"; patch: Partial<TripState["taxSettings"]> }
   | { type: "update-destination"; id: string; patch: Partial<Destination> }
   | { type: "add-destination"; patch?: Partial<Destination> }
   | { type: "delete-destination"; id: string }

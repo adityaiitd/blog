@@ -6,7 +6,7 @@ import { Copy, MonitorPlay, Printer, RotateCcw, Save, Users, X } from "lucide-re
 import { Button } from "@/components/ui/Button";
 import { useTrip } from "@/components/site/TripProvider";
 import { shareUrl } from "@/lib/shareState";
-import { loadVersions, saveVersions } from "@/lib/storage";
+import { loadHistory, saveHistory } from "@/lib/storage";
 import type { TripVersion } from "@/lib/types";
 import { diffTrips } from "@/lib/versions";
 
@@ -29,10 +29,10 @@ export function ShareBar() {
   const save = () => {
     const name = window.prompt("Name this version", `Italy escape · ${new Date().toLocaleDateString()}`);
     if (!name) return;
-    const next = [{ id: crypto.randomUUID(), name, createdAt: new Date().toISOString(), state: structuredClone(state) }, ...loadVersions()];
-    setVersions(next); saveVersions(next); setOpen(true);
+    const next = [{ id: crypto.randomUUID(), name, createdAt: new Date().toISOString(), state: structuredClone(state), pinned: true, summary: "Named version" }, ...loadHistory()];
+    setVersions(next); saveHistory(next); setOpen(true);
   };
-  const openVersions = () => { setVersions(loadVersions()); setOpen(true); };
+  const openVersions = () => { setVersions(loadHistory()); setOpen(true); };
   return (
     <div className="no-print">
       <div className="flex flex-wrap gap-2">
@@ -48,11 +48,11 @@ export function ShareBar() {
       {open && (
         <div className="fixed inset-0 z-[2000] grid place-items-center bg-black/45 p-4" role="dialog" aria-modal="true" aria-label="Saved versions">
           <div className="max-h-[85vh] w-full max-w-2xl overflow-auto bg-[var(--paper)] p-6 shadow-2xl">
-            <div className="mb-6 flex items-center justify-between"><h2 className="font-serif text-4xl">Saved versions</h2><Button variant="quiet" size="icon" onClick={() => setOpen(false)}><X /></Button></div>
+            <div className="mb-6 flex items-center justify-between"><div><h2 className="font-serif text-4xl">Version history</h2><p className="mt-1 text-xs text-[var(--muted)]">Autosaves from the last 5 days · named versions are kept</p></div><Button variant="quiet" size="icon" onClick={() => setOpen(false)}><X /></Button></div>
             {versions.length === 0 ? <p className="text-[var(--muted)]">No versions saved yet.</p> : versions.map((version) => {
               const diffs = diffTrips(version.state, state);
-              return <section key={version.id} className="border-t border-[var(--line)] py-5">
-                <div className="flex flex-wrap items-start justify-between gap-3"><div><h3 className="font-medium">{version.name}</h3><p className="text-xs text-[var(--muted)]">{new Date(version.createdAt).toLocaleString()}</p></div><Button size="sm" variant="outline" onClick={() => { dispatch({ type: "replace", state: version.state }); setOpen(false); }}>Restore</Button></div>
+              return <section key={version.id} className="relative ml-3 border-l border-[var(--line)] py-4 pl-6 before:absolute before:-left-1 before:top-6 before:size-2 before:rounded-full before:bg-[var(--olive)]">
+                <div className="flex flex-wrap items-start justify-between gap-3"><div><h3 className="font-medium">{version.pinned ? `Saved · ${version.name}` : version.name}</h3><p className="text-xs text-[var(--muted)]">{new Date(version.createdAt).toLocaleString()}</p><p className="mt-1 text-xs">{version.summary}</p></div><div className="flex gap-2">{!version.pinned && <Button size="sm" variant="quiet" onClick={() => { const next = versions.map((item) => item.id === version.id ? { ...item, pinned: true, name: `Saved ${new Date(item.createdAt).toLocaleString()}` } : item); setVersions(next); saveHistory(next); }}>Save</Button>}<Button size="sm" variant="outline" onClick={() => { dispatch({ type: "replace", state: version.state }); setOpen(false); }}>Restore</Button></div></div>
                 <div className="mt-3 grid gap-1 text-xs text-[var(--muted)]">{diffs.length === 0 ? "No changes from current draft" : diffs.slice(0, 4).map((diff) => <p key={diff.label}><b>{diff.label}:</b> {diff.before} → {diff.after}</p>)}</div>
               </section>;
             })}

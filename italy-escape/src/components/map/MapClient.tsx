@@ -63,7 +63,7 @@ export default function MapClient() {
           if (!from || !to) return null;
           return <Polyline key={leg.id} positions={curve(from, to, leg.mode)} pathOptions={style[leg.mode]}><Tooltip>{leg.details}</Tooltip></Polyline>;
         })}
-        {state.destinations.map((place, index) => (
+        {state.destinations.filter((place) => !place.waypoint).map((place, index) => (
           <Marker
             key={place.id}
             position={[place.lat, place.lng]}

@@ -14,7 +14,7 @@ export function tripReducer(state: TripState, action: TripAction): TripState {
     case "update-day":
       return { ...state, days: state.days.map((day) => day.id === action.id ? { ...day, ...action.patch } : day) };
     case "add-activity": {
-      const activity: Activity = { id: uid("activity"), title: "New activity", cost: 0, booked: false, weatherDependent: false };
+      const activity: Activity = { id: uid("activity"), title: "New activity", cost: 0, booked: false, weatherDependent: false, venue: "public", entryFee: 0, ...action.patch };
       return { ...state, days: state.days.map((day) => day.id === action.dayId ? { ...day, activities: [...day.activities, activity] } : day) };
     }
     case "update-activity":
@@ -68,12 +68,28 @@ export function tripReducer(state: TripState, action: TripAction): TripState {
       }
       return { ...state, stays, days: days.map((day, offset) => ({ ...day, offset })) };
     }
+    case "set-region-tier": {
+      const stay = state.stays.find((candidate) => candidate.id === action.stayId);
+      if (!stay) return state;
+      const hotel = state.hotels.find((candidate) => candidate.region === stay.region && candidate.tier === action.tier && candidate.recommended)
+        ?? state.hotels.find((candidate) => candidate.region === stay.region && candidate.tier === action.tier);
+      return {
+        ...state,
+        stays: state.stays.map((candidate) => candidate.id === action.stayId
+          ? { ...candidate, tier: action.tier, hotelId: hotel?.id ?? candidate.hotelId }
+          : candidate),
+      };
+    }
     case "update-hotel":
       return { ...state, hotels: state.hotels.map((hotel) => hotel.id === action.id ? { ...hotel, ...action.patch, nightlyRate: action.patch.nightlyRate === undefined ? hotel.nightlyRate : clamp(action.patch.nightlyRate) } : hotel) };
     case "select-hotel":
-      return { ...state, stays: state.stays.map((stay) => stay.id === action.stayId ? { ...stay, hotelId: action.hotelId } : stay) };
+      return { ...state, stays: state.stays.map((stay) => {
+        if (stay.id !== action.stayId) return stay;
+        const tier = state.hotels.find((hotel) => hotel.id === action.hotelId)?.tier ?? stay.tier;
+        return { ...stay, hotelId: action.hotelId, tier };
+      }) };
     case "add-hotel": {
-      const hotel: HotelOption = { id: uid("hotel"), region: action.region, name: "New hotel option", nightlyRate: 1000, roomMultipliers: { entry: 1, "sea-view": 1.25, suite: 1.75 }, selectedRoom: "entry", refundablePremium: 0, taxRate: 0, complimentaryNights: 0 };
+      const hotel: HotelOption = { id: uid("hotel"), region: action.region, name: "New hotel option", nightlyRate: 1000, roomMultipliers: { entry: 1, "sea-view": 1.25, suite: 1.75 }, selectedRoom: "entry", refundablePremium: 0, taxRate: 0, complimentaryNights: 0, tier: "luxury" };
       return { ...state, hotels: [...state.hotels, hotel] };
     }
     case "delete-hotel":
@@ -88,6 +104,7 @@ export function tripReducer(state: TripState, action: TripAction): TripState {
     }
     case "delete-cost": return { ...state, costs: state.costs.filter((cost) => cost.id !== action.id) };
     case "set-contingency": return { ...state, contingencyPercent: clamp(action.value, 0, 100) };
+    case "update-tax-settings": return { ...state, taxSettings: { ...state.taxSettings, ...action.patch } };
     case "update-destination":
       return { ...state, destinations: state.destinations.map((destination) => destination.id === action.id ? { ...destination, ...action.patch } : destination) };
     case "add-destination": {

@@ -4,8 +4,9 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useReducer,
 import { freshInitialTripState } from "@/data";
 import { connectCollaboration, type CollaborationSession } from "@/lib/collab";
 import { decodeTripState } from "@/lib/shareState";
-import { loadDraft, saveDraft } from "@/lib/storage";
+import { loadDraft, recordAutoVersion, saveDraft } from "@/lib/storage";
 import { tripReducer } from "@/lib/tripReducer";
+import { normalizeTripState } from "@/lib/migrate";
 import type { TripAction, TripState } from "@/lib/types";
 
 interface TripContextValue {
@@ -32,6 +33,7 @@ export function TripProvider({ children }: { children: React.ReactNode }) {
   const redoStack = useRef<TripState[]>([]);
   const stateRef = useRef(state);
   const collab = useRef<CollaborationSession | null>(null);
+  const lastAutoState = useRef<string | null>(null);
 
   useEffect(() => { stateRef.current = state; }, [state]);
 
@@ -41,11 +43,11 @@ export function TripProvider({ children }: { children: React.ReactNode }) {
       const encoded = params.get("t");
       if (encoded) {
         const result = decodeTripState(encoded);
-        if (result.state) baseDispatch({ type: "replace", state: result.state });
+        if (result.state) baseDispatch({ type: "replace", state: normalizeTripState(result.state) });
         else setHydrationError(result.error);
       } else {
         const draft = loadDraft();
-        if (draft?.schemaVersion === 1) baseDispatch({ type: "replace", state: draft });
+        if (draft?.schemaVersion === 1) baseDispatch({ type: "replace", state: normalizeTripState(draft) });
       }
       setHydrated(true);
     }, 0);
@@ -56,6 +58,18 @@ export function TripProvider({ children }: { children: React.ReactNode }) {
     if (!hydrated) return;
     const timer = window.setTimeout(() => saveDraft(state), 350);
     collab.current?.publish(state);
+    return () => window.clearTimeout(timer);
+  }, [state, hydrated]);
+
+  useEffect(() => {
+    if (!hydrated) return;
+    const serialized = JSON.stringify(state);
+    if (lastAutoState.current === null) { lastAutoState.current = serialized; return; }
+    if (lastAutoState.current === serialized) return;
+    const timer = window.setTimeout(() => {
+      recordAutoVersion(state);
+      lastAutoState.current = serialized;
+    }, 4000);
     return () => window.clearTimeout(timer);
   }, [state, hydrated]);
 

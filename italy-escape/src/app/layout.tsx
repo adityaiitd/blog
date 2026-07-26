@@ -3,6 +3,7 @@ import { Cormorant_Garamond, Manrope } from "next/font/google";
 import { Nav } from "@/components/site/Nav";
 import { ThemeProvider } from "@/components/site/ThemeProvider";
 import { TripProvider } from "@/components/site/TripProvider";
+import { ChatPanel } from "@/components/chat/ChatPanel";
 import "./globals.css";
 
 const sans = Manrope({
@@ -33,6 +34,7 @@ export default function RootLayout({
           <TripProvider>
             <Nav />
             {children}
+            <ChatPanel />
           </TripProvider>
         </ThemeProvider>
       </body>

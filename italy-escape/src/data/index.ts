@@ -22,6 +22,11 @@ export const initialTripState: TripState = {
   boats: boatTrips,
   costs,
   contingencyPercent: 10,
+  taxSettings: {
+    cityTaxPerPersonNight: 5.5,
+    boatVatPercent: 10,
+    diningServicePercent: 10,
+  },
 };
 
 export const freshInitialTripState = (): TripState =>
