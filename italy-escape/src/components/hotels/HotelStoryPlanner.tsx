@@ -10,6 +10,7 @@ import { ReviewBadge, VerifyChip } from "@/components/ui/VerifyChip";
 import { EditableNumber } from "@/components/edit/Editable";
 import { hotelTotal, hotelsTotal, money } from "@/lib/costCalculator";
 import { recommendedNightAssignments } from "@/lib/splitStay";
+import { AddHotel } from "./AddHotel";
 import type { HotelOption, Stay } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
@@ -157,6 +158,7 @@ export function HotelStoryPlanner() {
               <div className="flex flex-wrap items-center gap-3">
                 <p className="text-sm">{money(hotelsTotal(state.hotels, [stay]))}</p>
                 <Button size="sm" variant="outline" onClick={() => applyRecommended(stay)}>Use recommended split</Button>
+                <AddHotel stay={stay} />
               </div>
             </div>
             <p className="mb-6 max-w-3xl text-sm leading-6 text-[var(--muted)]">{regionIntro[stay.region]}</p>

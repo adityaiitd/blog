@@ -310,7 +310,7 @@ export const hotels: HotelOption[] = [
  * cliffside or harbour-side bases on the days spent entirely at sea.
  */
 export const stays: Stay[] = [
-  { id: "stay-sardinia", region: "Sardinia", destinationId: "cala-di-volpe", hotelId: "cala", nights: 5, tier: "luxury", nightHotelIds: ["cala", "cala", "cala", "vecchia-fonte", "vecchia-fonte"] },
-  { id: "stay-tuscany", region: "Tuscany", destinationId: "como", hotelId: "como-hotel", nights: 4, tier: "luxury", nightHotelIds: ["como-hotel", "como-hotel", "como-hotel", "como-hotel"] },
-  { id: "stay-amalfi", region: "Amalfi Coast", destinationId: "amalfi", hotelId: "anantara", nights: 5, tier: "luxury", nightHotelIds: ["onda-verde", "onda-verde", "onda-verde", "anantara", "anantara"] },
+  { id: "stay-sardinia", region: "Sardinia", destinationId: "cala-di-volpe", hotelId: "cala", nights: 5, tier: "luxury", nightHotelIds: ["cala", "cala", "cala", "vecchia-fonte", "vecchia-fonte"], flightHubId: "olbia", transferNote: "Private car, 35–50 min from Olbia airport" },
+  { id: "stay-tuscany", region: "Tuscany", destinationId: "como", hotelId: "como-hotel", nights: 4, tier: "luxury", nightHotelIds: ["como-hotel", "como-hotel", "como-hotel", "como-hotel"], flightHubId: "florence-airport", railHubId: "firenze-smn", transferNote: "Private car, 45 min from Florence" },
+  { id: "stay-amalfi", region: "Amalfi Coast", destinationId: "amalfi", hotelId: "anantara", nights: 5, tier: "luxury", nightHotelIds: ["onda-verde", "onda-verde", "onda-verde", "anantara", "anantara"], flightHubId: "naples-airport", railHubId: "napoli-centrale", transferNote: "Private car, 90 min from Naples" },
 ];

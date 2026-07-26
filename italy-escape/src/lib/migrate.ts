@@ -68,7 +68,12 @@ export function normalizeTripState(input: TripState): TripState {
       const nights = Number.isFinite(stay.nights) ? stay.nights : fallback.nights;
       const assignments = (stay.nightHotelIds ?? []).slice(0, nights).map((id) => hotelIds.has(id) ? id : hotelId);
       while (assignments.length < nights) assignments.push(hotelId);
-      return { ...stay, hotelId, nights, tier: stay.tier ?? "luxury", nightHotelIds: assignments };
+      return {
+        ...stay, hotelId, nights, tier: stay.tier ?? "luxury", nightHotelIds: assignments,
+        flightHubId: stay.flightHubId ?? fallback.flightHubId,
+        railHubId: stay.railHubId ?? fallback.railHubId,
+        transferNote: stay.transferNote ?? fallback.transferNote,
+      };
     }),
     routeLegs: (Array.isArray(input.routeLegs) ? input.routeLegs : defaults.routeLegs).map((leg) => ({
       ...leg,

@@ -1,3 +1,4 @@
+import { moveStay } from "./legOrder";
 import { reorderDays } from "./schedule";
 import type { Activity, CostCategory, Destination, HotelOption, RouteLeg, TripAction, TripState } from "./types";
 
@@ -104,9 +105,32 @@ export function tripReducer(state: TripState, action: TripAction): TripState {
         const tier = state.hotels.find((hotel) => hotel.id === action.hotelId)?.tier ?? stay.tier;
         return { ...stay, hotelId: action.hotelId, tier, nightHotelIds: Array(stay.nights).fill(action.hotelId) };
       }) };
+    case "move-stay": return moveStay(state, action.stayId, action.direction);
     case "add-hotel": {
-      const hotel: HotelOption = { id: uid("hotel"), region: action.region, name: "New hotel option", nightlyRate: 1000, roomMultipliers: { entry: 1, "sea-view": 1.25, suite: 1.75 }, selectedRoom: "entry", refundablePremium: 0, taxRate: 0, complimentaryNights: 0, tier: "luxury", officialUrl: "", roomsUrl: "", image: action.region === "Sardinia" ? "/images/costa-smeralda.webp" : action.region === "Tuscany" ? "/images/tuscany.webp" : "/images/amalfi.webp", pools: [], viewSummary: "Add view details", rooftop: false, waterfront: false, whyPick: "Add why this hotel belongs in the plan.", roomRecommendation: "Add a room recommendation", rateNote: "Verify the live rate directly.", bestFor: [], role: "signature", rating: 0, ratingScale: 5, reviewCount: 0, reviewSource: "Tripadvisor", reviewUrl: "https://www.tripadvisor.com/", verified: false, bookingUrl: "https://www.booking.com/", photos: [] };
-      return { ...state, hotels: [...state.hotels, hotel] };
+      const name = action.patch?.name ?? "New hotel option";
+      const search = encodeURIComponent(name);
+      const hotel: HotelOption = {
+        id: uid("hotel"), region: action.region, name, nightlyRate: 500,
+        roomMultipliers: { entry: 1, "sea-view": 1.25, suite: 1.75 }, selectedRoom: "entry",
+        refundablePremium: 0, taxRate: 0, complimentaryNights: 0, tier: "value",
+        officialUrl: `https://duckduckgo.com/?q=${search}+official+site`,
+        roomsUrl: `https://duckduckgo.com/?q=${search}+rooms`,
+        bookingUrl: `https://www.booking.com/searchresults.html?ss=${search}`,
+        reviewUrl: `https://www.tripadvisor.com/Search?q=${search}`,
+        image: action.region === "Sardinia" ? "/images/costa-smeralda.webp" : action.region === "Tuscany" ? "/images/tuscany.webp" : "/images/amalfi.webp",
+        pools: [], photos: [], viewSummary: "", rooftop: false, waterfront: false,
+        whyPick: "Added by you. Check the links for rooms, rates and reviews.",
+        roomRecommendation: "", rateNote: "Confirm the live rate before booking.", bestFor: [],
+        role: "value-stay", rating: 0, ratingScale: 5, reviewCount: 0, reviewSource: "Tripadvisor",
+        verified: false,
+        ...action.patch,
+      };
+      const stays = action.assignToStayId
+        ? state.stays.map((stay) => stay.id === action.assignToStayId
+          ? { ...stay, hotelId: hotel.id, nightHotelIds: Array(stay.nights).fill(hotel.id) }
+          : stay)
+        : state.stays;
+      return { ...state, hotels: [...state.hotels, hotel], stays };
     }
     case "delete-hotel":
       return state.stays.some((stay) => stay.hotelId === action.id) ? state : { ...state, hotels: state.hotels.filter((hotel) => hotel.id !== action.id) };

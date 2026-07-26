@@ -133,6 +133,10 @@ export interface Stay {
   nights: number;
   tier: TripTier;
   nightHotelIds?: string[];
+  /** Hubs used to rebuild connections when legs are reordered. */
+  flightHubId: string;
+  railHubId?: string;
+  transferNote: string;
 }
 
 export interface BoatExcursion {
@@ -212,7 +216,8 @@ export type TripAction =
   | { type: "assign-stay-night"; stayId: string; nightIndex: number; hotelId: string }
   | { type: "update-hotel"; id: string; patch: Partial<HotelOption> }
   | { type: "select-hotel"; stayId: string; hotelId: string }
-  | { type: "add-hotel"; region: string }
+  | { type: "add-hotel"; region: string; patch?: Partial<HotelOption>; assignToStayId?: string }
+  | { type: "move-stay"; stayId: string; direction: -1 | 1 }
   | { type: "delete-hotel"; id: string }
   | { type: "update-boat"; id: string; patch: Partial<BoatExcursion> }
   | { type: "update-cost"; id: string; patch: Partial<CostCategory> }
