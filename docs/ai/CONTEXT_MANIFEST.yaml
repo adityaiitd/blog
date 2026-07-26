@@ -1,0 +1,154 @@
+project_name: "Our Italy Escape"
+repository_root: "/workspace"
+application_root: "/workspace/italy-escape"
+current_branch: "cursor/italy-escape-v2-bcfd"
+current_commit: "242d7f636afc808363d80ee1bfe810264eca0e7d"
+snapshot_timestamp: "2026-07-26T22:14:34Z"
+current_milestone: "V2 deployed; correctness, sharing, and reliability hardening"
+
+primary_entrypoints:
+  - "italy-escape/src/app/layout.tsx"
+  - "italy-escape/src/app/page.tsx"
+  - "italy-escape/src/components/site/TripProvider.tsx"
+  - "italy-escape/src/lib/types.ts"
+  - "italy-escape/src/lib/tripReducer.ts"
+  - "italy-escape/src/data/index.ts"
+
+important_directories:
+  - path: "italy-escape/src/app"
+    purpose: "Next.js pages, error boundary, and API routes"
+  - path: "italy-escape/src/components"
+    purpose: "Feature and shared React UI"
+  - path: "italy-escape/src/data"
+    purpose: "Seed trip, hotel, boat, place, activity, and cost data"
+  - path: "italy-escape/src/lib"
+    purpose: "State, derivations, persistence, collaboration, migration, and tests"
+  - path: "italy-escape/public/images"
+    purpose: "Nine local generated editorial destination images"
+  - path: "docs/ai"
+    purpose: "Canonical project memory"
+
+active_workstreams:
+  - id: "WS-03"
+    name: "Hotels, split stays, and lookup"
+    status: "ACTIVE"
+  - id: "WS-06"
+    name: "Maps and spatial planning"
+    status: "ACTIVE"
+  - id: "WS-07"
+    name: "Sharing, saves, history, and collaboration"
+    status: "ACTIVE"
+  - id: "WS-10"
+    name: "Reliability, security, and release engineering"
+    status: "ACTIVE"
+  - id: "WS-11"
+    name: "Documentation and canonical memory"
+    status: "ACTIVE"
+
+pending_decisions:
+  - "Custom hotel coordinate model: one pin per hotel versus one active lodging pin per stay"
+  - "Remove dormant OpenAI route versus harden and connect it"
+  - "Value tier semantics: replace all nights versus preserve signature/boat-base split"
+  - "Whether the 4.5+ recommendation floor must be Tripadvisor specifically"
+  - "Restore /value to navigation versus deprecate it"
+  - "Behavior when reducing a stay would remove a boat day"
+
+highest_priority_tasks:
+  - priority: "P0"
+    task: "Fix empty-destinations migration and add regression tests"
+  - priority: "P0"
+    task: "Replace 32 KB full-state share links with versioned compact delta serialization"
+  - priority: "P1"
+    task: "Deeply validate shared URL and peer state"
+  - priority: "P1"
+    task: "Persist custom hotel coordinates and render their map pins"
+  - priority: "P1"
+    task: "Fix draft quota handling and saved-signature baseline"
+
+validation_commands:
+  - "cd /workspace/italy-escape && npm run lint"
+  - "cd /workspace/italy-escape && npm run typecheck"
+  - "cd /workspace/italy-escape && npm test"
+  - "cd /workspace/italy-escape && npm run build"
+  - "cd /workspace/italy-escape && npm run screenshots"
+  - "cd /workspace/italy-escape && npm audit --omit=dev"
+
+environment_variable_names:
+  required: []
+  optional:
+    - "OPENAI_API_KEY"
+    - "NEXT_PUBLIC_SIGNALING_URLS"
+    - "SCREENSHOT_BASE_URL"
+
+external_dependencies:
+  - name: "Vercel"
+    purpose: "Hosting and Next.js server routes"
+  - name: "OpenStreetMap Nominatim"
+    purpose: "Keyless hotel lookup"
+  - name: "CARTO and OpenStreetMap tiles"
+    purpose: "Leaflet maps"
+  - name: "Yjs and y-webrtc signaling"
+    purpose: "Optional P2P collaboration"
+  - name: "Booking.com and hotel image CDNs"
+    purpose: "Real property photography and booking links"
+  - name: "Viator, Tripadvisor, and operator sites"
+    purpose: "Review, operator, and price-source links"
+  - name: "OpenAI Responses API"
+    purpose: "Dormant optional chat route"
+  - name: "Google Fonts"
+    purpose: "Manrope and Cormorant Garamond via next/font"
+
+canonical_context_files:
+  - "docs/ai/PROJECT_CONTEXT.md"
+  - "docs/ai/CURRENT_STATE.md"
+  - "docs/ai/DECISIONS.md"
+  - "docs/ai/ARCHITECTURE.md"
+  - "docs/ai/WORKSTREAMS.md"
+  - "docs/ai/NEXT_STEPS.md"
+  - "docs/ai/KNOWN_ISSUES.md"
+  - "docs/ai/SESSION_LOG.md"
+  - "docs/ai/CONTEXT_MANIFEST.yaml"
+
+files_changed_in_current_work:
+  - "docs/ai/PROJECT_CONTEXT.md"
+  - "docs/ai/CURRENT_STATE.md"
+  - "docs/ai/DECISIONS.md"
+  - "docs/ai/ARCHITECTURE.md"
+  - "docs/ai/WORKSTREAMS.md"
+  - "docs/ai/NEXT_STEPS.md"
+  - "docs/ai/KNOWN_ISSUES.md"
+  - "docs/ai/SESSION_LOG.md"
+  - "docs/ai/CONTEXT_MANIFEST.yaml"
+
+files_that_must_not_be_modified:
+  - "italy-escape/.env.local"
+  - "italy-escape/.next/**"
+  - "italy-escape/screenshots/**"
+  - "italy-escape/next-env.d.ts"
+  - "/opt/cursor/artifacts/plans/*.plan.md"
+
+known_risks:
+  - "Confirmed: empty destinations migrate to zero destinations"
+  - "Confirmed: default compressed share payload is 32005 characters"
+  - "Shared nested state is validated with z.any"
+  - "Custom hotel coordinates are returned but not persisted"
+  - "P2P collaboration is unauthenticated whole-state last-write-wins"
+  - "Nominatim and optional OpenAI routes are public and unthrottled"
+  - "npm audit reports 3 high advisories in Next-bundled PostCSS and Sharp"
+  - "Remote hotel images and external review/operator links can break"
+  - "No CI, component tests, API tests, or collaboration tests"
+  - "README names retired Palazzo Ferraioli instead of Onda Verde"
+
+production:
+  v1_url: "https://italy-escape.vercel.app"
+  v2_url: "https://italy-escape1.vercel.app"
+  v2_pull_request: "https://github.com/adityaiitd/blog/pull/2"
+
+validation_snapshot:
+  lint: "PASS"
+  typecheck: "PASS"
+  unit_tests: "PASS: 9 files, 47 tests"
+  production_build: "PASS: 15 route entries"
+  screenshot_qa: "PASS"
+  dependency_audit: "FAIL: 3 high advisories in bundled transitive dependencies"
+  working_tree_before_docs: "clean"
