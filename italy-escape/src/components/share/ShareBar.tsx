@@ -6,7 +6,6 @@ import { Copy, MonitorPlay, Printer, RotateCcw, Users } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { useTrip } from "@/components/site/TripProvider";
 import { shareUrl } from "@/lib/shareState";
-import { SaveBar } from "./SaveBar";
 
 export function ShareBar() {
   const { state, reset } = useTrip();
@@ -26,8 +25,7 @@ export function ShareBar() {
 
   return (
     <div className="no-print">
-      <SaveBar />
-      <div className="mt-2 flex flex-wrap gap-2">
+      <div className="flex flex-wrap gap-2">
         <Button variant="outline" size="sm" onClick={() => copy()}><Copy size={14} />Copy link</Button>
         <Button variant="outline" size="sm" onClick={() => copy(true)}><Users size={14} />Share to edit together</Button>
         <Link href="/present"><Button variant="outline" size="sm"><MonitorPlay size={14} />Present</Button></Link>
