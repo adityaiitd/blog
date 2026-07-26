@@ -4,7 +4,7 @@ import { Plus, Trash2 } from "lucide-react";
 import { EditableNumber, EditableText, Field } from "@/components/edit/Editable";
 import { useTrip } from "@/components/site/TripProvider";
 import { Button } from "@/components/ui/Button";
-import { calculateCosts, hotelTotal, money } from "@/lib/costCalculator";
+import { calculateCosts, hotelTotal, hotelsTotal, money } from "@/lib/costCalculator";
 import type { RouteLeg } from "@/lib/types";
 
 export function CostCalculator() {
@@ -69,7 +69,7 @@ export function CostCalculator() {
         <p className="eyebrow mb-3">Hotel combination differences</p><h2 className="mb-6 font-serif text-4xl">The room for choice</h2>
         {state.stays.map((stay) => {
           const selected = state.hotels.find((hotel) => hotel.id === stay.hotelId);
-          const selectedTotal = selected ? hotelTotal(selected, stay.nights) : 0;
+          const selectedTotal = selected ? hotelsTotal(state.hotels, [stay]) : 0;
           return <div key={stay.id} className="mb-5 border-t border-[var(--line)] pt-3"><h3 className="mb-2 text-sm font-semibold">{stay.region}</h3>{state.hotels.filter((hotel) => hotel.region === stay.region).map((hotel) => <div key={hotel.id} className="flex justify-between py-1 text-sm text-[var(--muted)]"><span>{hotel.name}</span><span>{money(hotelTotal(hotel, stay.nights) - selectedTotal)} vs. selected</span></div>)}</div>;
         })}
       </section>

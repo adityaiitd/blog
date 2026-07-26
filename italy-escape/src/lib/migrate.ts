@@ -10,7 +10,7 @@ export function normalizeTripState(input: TripState): TripState {
     taxSettings: input.taxSettings ?? defaults.taxSettings,
     stays: input.stays.map((stay) => ({ ...stay, tier: stay.tier ?? "luxury" })),
     hotels: [
-      ...input.hotels.map((hotel) => ({ ...hotel, tier: hotel.tier ?? "luxury" as const })),
+      ...input.hotels.map((hotel) => ({ ...defaults.hotels.find((candidate) => candidate.id === hotel.id), ...hotel, tier: hotel.tier ?? "luxury" as const })),
       ...defaults.hotels.filter((hotel) => !input.hotels.some((candidate) => candidate.id === hotel.id)),
     ],
     routeLegs: input.routeLegs.map((leg) => ({
@@ -24,11 +24,14 @@ export function normalizeTripState(input: TripState): TripState {
         ...activity,
         venue: activity.venue ?? (activity.boatId ? "boat" : "public"),
         entryFee: activity.entryFee ?? 0,
+        purpose: activity.purpose ?? (activity.boatId ? "sail" : activity.venue === "hotel" ? "relax" : activity.venue === "transit" ? "travel" : "see"),
+        rationale: activity.rationale ?? "Chosen to add a strong sense of place without overloading the day.",
       })),
     })),
     boats: input.boats.map((boat) => {
       const fallback = defaults.boats.find((candidate) => candidate.id === boat.id);
       return {
+        ...fallback,
         ...boat,
         waypointIds: boat.waypointIds ?? fallback?.waypointIds ?? [],
         valueBudget: boat.valueBudget ?? Math.round(boat.budget * .5),

@@ -45,9 +45,12 @@ export default function TripMapClient() {
           return from && to ? <Polyline key={leg.id} positions={[[from.lat, from.lng], [to.lat, to.lng]]} pathOptions={routeStyle[leg.mode]}><Tooltip>{leg.details}</Tooltip></Polyline> : null;
         })}
         {layers.hotels && staysWithDates.map(({ stay, start, end }) => {
-          const place = places.get(stay.destinationId); const hotel = state.hotels.find((item) => item.id === stay.hotelId);
+          const place = places.get(stay.destinationId);
+          const assignedIds = [...new Set(stay.nightHotelIds?.length ? stay.nightHotelIds : [stay.hotelId])];
+          const assignedHotels = assignedIds.map((id) => state.hotels.find((item) => item.id === id)).filter(Boolean);
+          const hotel = assignedHotels[0];
           if (!place || !hotel) return null;
-          const label = `${hotel.name} · ${format(addDays(parseISO(state.startDate), start), "MMM d")}–${format(addDays(parseISO(state.startDate), end), "MMM d")}`;
+          const label = `${assignedHotels.map((item) => item!.name).join(" → ")} · ${format(addDays(parseISO(state.startDate), start), "MMM d")}–${format(addDays(parseISO(state.startDate), end), "MMM d")}`;
           return <Marker key={stay.id} position={[place.lat, place.lng]} icon={L.divIcon({ className: "map-marker map-marker-hotel", html: "H" })} eventHandlers={{ click: () => setSelected({ kind: "hotel", id: hotel.id }) }}><Tooltip permanent direction="top">{label}</Tooltip></Marker>;
         })}
         {layers.boats && state.boats.map((boat) => {

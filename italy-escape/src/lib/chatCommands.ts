@@ -13,6 +13,21 @@ export function interpretTripCommand(input: string, state: TripState): ChatResul
   const lower = text.toLowerCase();
   if (!text) return { reply: "Tell me what you would like to change.", actions: [] };
 
+  if (/boat.*(?:price|budget|expensive)|why.*boat/.test(lower)) {
+    return { reply: "I rechecked 2026 published rates. Private Sardinia RIBs generally run about €700–€2,500; private Amalfi gozzos about €1,400–€1,900. The plan now budgets $6,900 before gratuity across four days instead of the original $14,000.", actions: [] };
+  }
+  if (/which hotels?.*(?:pool|rooftop)|(?:pool|rooftop).*hotels?/.test(lower)) {
+    const rooftop = state.hotels.filter((hotel) => hotel.rooftop).map((hotel) => hotel.name).join(", ");
+    return { reply: `Every recommended hotel has a pool. For a true rooftop pool choose ${rooftop || "Hotel Marina Riviera"}; for the strongest infinity-pool views choose Anantara in Amalfi, Caruso in Ravello, or Castiglion del Bosco in Tuscany.`, actions: [] };
+  }
+  const splitRegion = /(?:optimize|split).*(sardinia|amalfi)/.exec(lower);
+  if (splitRegion) {
+    const stay = state.stays.find((item) => item.region.toLowerCase().includes(splitRegion[1]));
+    if (stay) {
+      const ids = stay.region === "Sardinia" ? ["cala", "cala", "cala", "gabbiano", "gabbiano"] : ["marina-riviera", "marina-riviera", "marina-riviera", "anantara", "anantara"];
+      return { reply: `${stay.region} now uses one practical split: boat-friendly value nights and luxury resort nights when you can actually enjoy the property.`, actions: ids.slice(0, stay.nights).map((hotelId, nightIndex) => ({ type: "assign-stay-night", stayId: stay.id, nightIndex, hotelId })) };
+    }
+  }
   if (/total|how much|budget/.test(lower)) {
     const costs = calculateCosts(state);
     return { reply: `Your current baseline is ${money(costs.baseline)} for ${state.travelers} people, or ${money(costs.perPerson)} per person.`, actions: [] };

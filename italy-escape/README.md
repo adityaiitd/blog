@@ -41,6 +41,10 @@ Every settled edit is also autosaved to a Google-Sheets-style timeline. Autosave
 
 The floating **Ask the trip** button understands commands such as “Make Amalfi cheaper,” “Set Tuscany to 5 nights,” “Move Capri boat to the weather day,” and “What is our total?” It works locally without a key. An optional `OPENAI_API_KEY` enables the server route for future free-form LLM integration; the deterministic assistant remains the default and no key is required.
 
+The visual itinerary explains what each activity is for (eating, sightseeing, walking, relaxing, travel or boating), why it is included, and where the couple sleeps. The hotel view includes pool/view facts, recommended room categories, official room and rate links, and editable night-by-night split stays. The default schedule groups Sardinia’s boat days at the end and Amalfi’s at the beginning so a single hotel move can reduce nights spent away from an expensive resort.
+
+Boat budgets were rechecked against published 2026 listings. The revised private-charter assumptions are approximately $1,500–$1,800 for Amalfi and $1,800 for Sardinia, with lower private/shared alternatives. Source links and the reasoning are visible on each boat card.
+
 ## Print, PDF and presentation
 
 - `/print` is an A4-friendly itinerary. Use the browser print dialog and choose **Save as PDF**.
@@ -48,7 +52,7 @@ The floating **Ask the trip** button understands commands such as “Make Amalfi
 
 ## Photography
 
-The nine local WebP files in `public/images` are original generated travel placeholders, not scraped hotel photography: `costa-smeralda.webp`, `cala-di-volpe.webp`, `la-maddalena.webp`, `tuscany.webp`, `florence.webp`, `val-dorcia.webp`, `amalfi.webp`, `capri.webp`, and `positano.webp`.
+The nine local WebP files in `public/images` are original generated editorial destination images, not scraped hotel photography: `costa-smeralda.webp`, `cala-di-volpe.webp`, `la-maddalena.webp`, `tuscany.webp`, `florence.webp`, `val-dorcia.webp`, `amalfi.webp`, `capri.webp`, and `positano.webp`. Hotel cards clearly label this distinction and link to each property’s official room/gallery pages for current, accurate photography.
 
 To use personal photography, replace a file with your own image using the same filename. Use a landscape 16:9 image, at least 1600px wide, convert it to WebP, and preserve the filename so no code changes are needed. Only use images you own or are licensed to use.
 

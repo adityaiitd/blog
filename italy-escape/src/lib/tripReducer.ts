@@ -14,7 +14,7 @@ export function tripReducer(state: TripState, action: TripAction): TripState {
     case "update-day":
       return { ...state, days: state.days.map((day) => day.id === action.id ? { ...day, ...action.patch } : day) };
     case "add-activity": {
-      const activity: Activity = { id: uid("activity"), title: "New activity", cost: 0, booked: false, weatherDependent: false, venue: "public", entryFee: 0, ...action.patch };
+      const activity: Activity = { id: uid("activity"), title: "New activity", cost: 0, booked: false, weatherDependent: false, venue: "public", entryFee: 0, purpose: "see", rationale: "A flexible addition to shape around your energy.", ...action.patch };
       return { ...state, days: state.days.map((day) => day.id === action.dayId ? { ...day, activities: [...day.activities, activity] } : day) };
     }
     case "update-activity":
@@ -41,7 +41,12 @@ export function tripReducer(state: TripState, action: TripAction): TripState {
       const current = state.stays.find((stay) => stay.id === action.id);
       if (!current) return state;
       const nextNights = action.patch.nights === undefined ? current.nights : clamp(action.patch.nights, 0, 30);
-      const stays = state.stays.map((stay) => stay.id === action.id ? { ...stay, ...action.patch, nights: nextNights } : stay);
+      const stays = state.stays.map((stay) => {
+        if (stay.id !== action.id) return stay;
+        const nightHotelIds = (stay.nightHotelIds ?? Array(stay.nights).fill(stay.hotelId)).slice(0, nextNights);
+        while (nightHotelIds.length < nextNights) nightHotelIds.push(stay.hotelId);
+        return { ...stay, ...action.patch, nights: nextNights, nightHotelIds };
+      });
       const delta = nextNights - current.nights;
       if (!delta) return { ...state, stays };
       const stayIndex = state.stays.findIndex((stay) => stay.id === action.id);
@@ -68,6 +73,17 @@ export function tripReducer(state: TripState, action: TripAction): TripState {
       }
       return { ...state, stays, days: days.map((day, offset) => ({ ...day, offset })) };
     }
+    case "assign-stay-night":
+      return {
+        ...state,
+        stays: state.stays.map((stay) => {
+          if (stay.id !== action.stayId) return stay;
+          const assignments = stay.nightHotelIds?.slice(0, stay.nights) ?? Array(stay.nights).fill(stay.hotelId);
+          while (assignments.length < stay.nights) assignments.push(stay.hotelId);
+          assignments[action.nightIndex] = action.hotelId;
+          return { ...stay, nightHotelIds: assignments };
+        }),
+      };
     case "set-region-tier": {
       const stay = state.stays.find((candidate) => candidate.id === action.stayId);
       if (!stay) return state;
@@ -76,7 +92,7 @@ export function tripReducer(state: TripState, action: TripAction): TripState {
       return {
         ...state,
         stays: state.stays.map((candidate) => candidate.id === action.stayId
-          ? { ...candidate, tier: action.tier, hotelId: hotel?.id ?? candidate.hotelId }
+          ? { ...candidate, tier: action.tier, hotelId: hotel?.id ?? candidate.hotelId, nightHotelIds: Array(candidate.nights).fill(hotel?.id ?? candidate.hotelId) }
           : candidate),
       };
     }
@@ -86,10 +102,10 @@ export function tripReducer(state: TripState, action: TripAction): TripState {
       return { ...state, stays: state.stays.map((stay) => {
         if (stay.id !== action.stayId) return stay;
         const tier = state.hotels.find((hotel) => hotel.id === action.hotelId)?.tier ?? stay.tier;
-        return { ...stay, hotelId: action.hotelId, tier };
+        return { ...stay, hotelId: action.hotelId, tier, nightHotelIds: Array(stay.nights).fill(action.hotelId) };
       }) };
     case "add-hotel": {
-      const hotel: HotelOption = { id: uid("hotel"), region: action.region, name: "New hotel option", nightlyRate: 1000, roomMultipliers: { entry: 1, "sea-view": 1.25, suite: 1.75 }, selectedRoom: "entry", refundablePremium: 0, taxRate: 0, complimentaryNights: 0, tier: "luxury" };
+      const hotel: HotelOption = { id: uid("hotel"), region: action.region, name: "New hotel option", nightlyRate: 1000, roomMultipliers: { entry: 1, "sea-view": 1.25, suite: 1.75 }, selectedRoom: "entry", refundablePremium: 0, taxRate: 0, complimentaryNights: 0, tier: "luxury", officialUrl: "", roomsUrl: "", image: action.region === "Sardinia" ? "/images/costa-smeralda.webp" : action.region === "Tuscany" ? "/images/tuscany.webp" : "/images/amalfi.webp", pools: [], viewSummary: "Add view details", rooftop: false, waterfront: false, whyPick: "Add why this hotel belongs in the plan.", roomRecommendation: "Add a room recommendation", rateNote: "Verify the live rate directly.", bestFor: [] };
       return { ...state, hotels: [...state.hotels, hotel] };
     }
     case "delete-hotel":

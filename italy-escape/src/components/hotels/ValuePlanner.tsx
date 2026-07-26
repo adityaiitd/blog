@@ -4,7 +4,7 @@ import Image from "next/image";
 import { Check, Sparkles, WalletCards } from "lucide-react";
 import { useTrip } from "@/components/site/TripProvider";
 import { Button } from "@/components/ui/Button";
-import { hotelTotal, money } from "@/lib/costCalculator";
+import { hotelTotal, hotelsTotal, money } from "@/lib/costCalculator";
 import type { TripTier } from "@/lib/types";
 
 const image: Record<string, string> = { Sardinia: "/images/cala-di-volpe.webp", Tuscany: "/images/val-dorcia.webp", "Amalfi Coast": "/images/positano.webp" };
@@ -17,10 +17,12 @@ export function ValuePlanner() {
     const boats = state.boats.filter((boat) => boat.region === stay.region);
     const luxuryTotal = (luxury ? hotelTotal(luxury, stay.nights) : 0) + boats.reduce((sum, boat) => sum + boat.budget + boat.gratuity, 0);
     const valueTotal = (value ? hotelTotal(value, stay.nights) : 0) + boats.reduce((sum, boat) => sum + boat.valueBudget + boat.gratuity, 0);
-    return { stay, luxury, value, luxuryTotal, valueTotal, savings: luxuryTotal - valueTotal };
+    const currentBoats = boats.reduce((sum, boat) => sum + (stay.tier === "value" ? boat.valueBudget : boat.budget) + boat.gratuity, 0);
+    const currentTotal = hotelsTotal(state.hotels, [stay]) + currentBoats;
+    return { stay, luxury, value, luxuryTotal, valueTotal, currentTotal, savings: luxuryTotal - valueTotal };
   });
   const luxuryTrip = regions.reduce((sum, region) => sum + region.luxuryTotal, 0);
-  const selectedTrip = regions.reduce((sum, region) => sum + (region.stay.tier === "value" ? region.valueTotal : region.luxuryTotal), 0);
+  const selectedTrip = regions.reduce((sum, region) => sum + region.currentTotal, 0);
   return (
     <>
       <div className="mb-12 grid gap-8 md:grid-cols-2 md:items-end">

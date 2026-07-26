@@ -12,8 +12,12 @@ export function hotelTotal(hotel: HotelOption, nights: number) {
 
 export function hotelsTotal(hotels: HotelOption[], stays: Stay[]) {
   return stays.reduce((sum, stay) => {
-    const hotel = hotels.find((candidate) => candidate.id === stay.hotelId);
-    return sum + (hotel ? hotelTotal(hotel, stay.nights) : 0);
+    const assignments = stay.nightHotelIds?.length ? stay.nightHotelIds.slice(0, stay.nights) : Array(stay.nights).fill(stay.hotelId);
+    const nightsByHotel = assignments.reduce<Record<string, number>>((counts, hotelId) => ({ ...counts, [hotelId]: (counts[hotelId] ?? 0) + 1 }), {});
+    return sum + Object.entries(nightsByHotel).reduce((hotelSum, [hotelId, nights]) => {
+      const hotel = hotels.find((candidate) => candidate.id === hotelId);
+      return hotelSum + (hotel ? hotelTotal(hotel, nights) : 0);
+    }, 0);
   }, 0);
 }
 

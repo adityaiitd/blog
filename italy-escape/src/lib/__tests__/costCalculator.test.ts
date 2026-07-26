@@ -29,7 +29,7 @@ describe("cost calculator", () => {
 
   it("calculates city tax, boat VAT and dining service explicitly", () => {
     const state = freshInitialTripState();
-    const expected = 14 * 2 * 5.5 + 14000 * .1 + 6500 * .1;
+    const expected = 14 * 2 * 5.5 + 6900 * .1 + 6500 * .1;
     expect(taxesTotal(state)).toBe(expected);
   });
 
@@ -39,9 +39,17 @@ describe("cost calculator", () => {
     const luxuryTotal = calculateCosts(luxury).subtotal;
     const valueTotal = calculateCosts(value).subtotal;
     expect(valueTotal).toBeLessThan(luxuryTotal);
-    const regionLuxury = 1898 * 5 + 3000 * 2 + 300 * 2;
-    const regionValue = 1400 * 5 + 2250 * 2 + 300 * 2;
+    const regionLuxury = 1898 * 5 + 1800 + 200 + 1500 + 150;
+    const regionValue = 1400 * 5 + 1100 + 200 + 900 + 150;
     expect((regionLuxury - regionValue) / regionLuxury).toBeGreaterThan(.2);
     expect((regionLuxury - regionValue) / regionLuxury).toBeLessThan(.3);
+  });
+
+  it("prices split stays night by night", () => {
+    let state = freshInitialTripState();
+    ["cala", "cala", "cala", "gabbiano", "gabbiano"].forEach((hotelId, nightIndex) => {
+      state = tripReducer(state, { type: "assign-stay-night", stayId: "stay-sardinia", nightIndex, hotelId });
+    });
+    expect(hotelsTotal(state.hotels, state.stays)).toBe(3 * 1927 + 2 * 1300 + 4 * 861 + 5 * 1898);
   });
 });

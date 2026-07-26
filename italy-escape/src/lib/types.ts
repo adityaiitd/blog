@@ -5,6 +5,7 @@ export type RoomLevel = "entry" | "sea-view" | "suite";
 export type WeatherStatus = "forecast-pending" | "go" | "watch" | "cancelled";
 export type TripTier = "luxury" | "value";
 export type ActivityVenue = "hotel" | "boat" | "public" | "transit";
+export type ActivityPurpose = "eat" | "see" | "walk" | "relax" | "travel" | "sail";
 
 export interface Destination {
   id: string;
@@ -47,6 +48,8 @@ export interface Activity {
   boatId?: string;
   venue: ActivityVenue;
   entryFee?: number;
+  purpose: ActivityPurpose;
+  rationale: string;
 }
 
 export interface ItineraryDay {
@@ -73,6 +76,17 @@ export interface HotelOption {
   complimentaryNights: number;
   recommended?: boolean;
   tier: TripTier;
+  officialUrl: string;
+  roomsUrl: string;
+  image: string;
+  pools: string[];
+  viewSummary: string;
+  rooftop: boolean;
+  waterfront: boolean;
+  whyPick: string;
+  roomRecommendation: string;
+  rateNote: string;
+  bestFor: string[];
 }
 
 export interface Stay {
@@ -82,6 +96,7 @@ export interface Stay {
   hotelId: string;
   nights: number;
   tier: TripTier;
+  nightHotelIds?: string[];
 }
 
 export interface BoatExcursion {
@@ -104,6 +119,8 @@ export interface BoatExcursion {
   waypointIds: string[];
   valueBudget: number;
   valueVessel: string;
+  priceSourceUrl: string;
+  priceRationale: string;
 }
 
 export interface CostCategory {
@@ -159,6 +176,7 @@ export type TripAction =
   | { type: "reorder-days"; activeId: string; overId: string }
   | { type: "update-stay"; id: string; patch: Partial<Stay> }
   | { type: "set-region-tier"; stayId: string; tier: TripTier }
+  | { type: "assign-stay-night"; stayId: string; nightIndex: number; hotelId: string }
   | { type: "update-hotel"; id: string; patch: Partial<HotelOption> }
   | { type: "select-hotel"; stayId: string; hotelId: string }
   | { type: "add-hotel"; region: string }
