@@ -17,4 +17,9 @@ describe("schedule", () => {
     expect(next.map((day) => day.offset)).toEqual(next.map((_, index) => index));
     expect(next.findIndex((day) => day.id === "day-3")).toBe(5);
   });
+
+  it("seeds explicit hotel, boat, public and transit activities", () => {
+    const venues = new Set(freshInitialTripState().days.flatMap((day) => day.activities.map((activity) => activity.venue)));
+    expect([...venues].sort()).toEqual(["boat", "hotel", "public", "transit"]);
+  });
 });

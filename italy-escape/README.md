@@ -1,6 +1,6 @@
 # Our Italy Escape
 
-A private, editable planning studio for a 14-hotel-night journey through Sardinia, Tuscany and the Amalfi Coast. Built with Next.js App Router, TypeScript, Tailwind CSS and React Leaflet.
+A private, editable planning studio for a 14-hotel-night journey through Sardinia, Tuscany and the Amalfi Coast. Version 2 adds per-region value planning, a hotel-and-boat map, direct chat editing and five-day version history.
 
 ## Run locally
 
@@ -30,6 +30,17 @@ Edits are saved to `localStorage` as `italy-escape:draft:v1`. “Copy link” co
 
 “Save version” stores named snapshots locally and shows structural differences before restore. “Collaborate” adds a room ID and syncs peer-to-peer with Yjs/WebRTC. This needs no application backend, but discovery depends on public signaling availability. Set a comma-separated `NEXT_PUBLIC_SIGNALING_URLS` if you operate your own signaling service. The app falls back to solo editing if peers cannot connect.
 
+Every settled edit is also autosaved to a Google-Sheets-style timeline. Autosaves are retained for five days (up to 200 entries); named saves are pinned until removed from browser storage.
+
+## New planning views
+
+- `/map` overlays dated hotel stays, complete boat routes and all transport. Layers can be toggled independently and selected markers are editable.
+- `/value` switches Sardinia, Tuscany or Amalfi independently between Luxury and a one-tier-below plan. Dates and core experiences stay fixed while hotel and boat choices move roughly 20–30% lower.
+- `/itinerary` opens in a simple reading view that makes “at hotel,” “on the water,” “out exploring” and “in transit” explicit. Advanced editing remains available.
+- `/costs` includes editable economy flight prices, Italian city tax, charter VAT and restaurant service.
+
+The floating **Ask the trip** button understands commands such as “Make Amalfi cheaper,” “Set Tuscany to 5 nights,” “Move Capri boat to the weather day,” and “What is our total?” It works locally without a key. An optional `OPENAI_API_KEY` enables the server route for future free-form LLM integration; the deterministic assistant remains the default and no key is required.
+
 ## Print, PDF and presentation
 
 - `/print` is an A4-friendly itinerary. Use the browser print dialog and choose **Save as PDF**.
@@ -49,7 +60,7 @@ With `npm run dev` running in one terminal, run:
 npm run screenshots
 ```
 
-This captures desktop journey, itinerary, hotels and budget views plus a mobile journey view into `screenshots/` (gitignored). On a fresh machine first run `npx playwright install chromium`.
+This captures desktop journey, map, value plan, itinerary, hotels and budget views plus a mobile journey view into `screenshots/` (gitignored). It fails if any page emits a browser console or runtime error. On a fresh machine first run `npx playwright install chromium`.
 
 ## Deploy to Vercel
 
@@ -61,6 +72,8 @@ The repository contains this app in `italy-escape/`. In Vercel:
 4. Deploy. No secrets are needed.
 
 For a repository containing only this directory, `vercel` or `npx vercel` also works directly.
+
+The original edition remains at `italy-escape.vercel.app`. Version 2 is a separate Vercel project at `italy-escape1.vercel.app`; relink with `npx vercel link --project italy-escape1 --yes` before deploying v2.
 
 ## Architecture
 

@@ -22,4 +22,11 @@ describe("trip reducer", () => {
     const state = freshInitialTripState();
     expect(tripReducer(state, { type: "delete-hotel", id: "cala" }).hotels).toHaveLength(state.hotels.length);
   });
+
+  it("switches only the requested region to its recommended value hotel", () => {
+    const state = freshInitialTripState();
+    const next = tripReducer(state, { type: "set-region-tier", stayId: "stay-amalfi", tier: "value" });
+    expect(next.stays.find((stay) => stay.id === "stay-amalfi")).toMatchObject({ tier: "value", hotelId: "marina-riviera" });
+    expect(next.stays.find((stay) => stay.id === "stay-sardinia")?.tier).toBe("luxury");
+  });
 });
