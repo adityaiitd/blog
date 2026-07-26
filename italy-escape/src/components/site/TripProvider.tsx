@@ -21,7 +21,7 @@ interface TripContextValue {
   hydrationError?: string;
   peers: number;
   versions: TripVersion[];
-  saveVersion: (name?: string) => void;
+  saveVersion: (name?: string, authorName?: string) => void;
   restoreVersion: (id: string) => void;
   author: string;
   setAuthor: (name: string) => void;
@@ -144,8 +144,9 @@ export function TripProvider({ children }: { children: React.ReactNode }) {
   const setAuthor = useCallback((name: string) => { setAuthorState(name); saveAuthor(name); }, []);
 
   /** A save is a pinned, attributed snapshot that everyone on the shared link receives. */
-  const saveVersion = useCallback((name?: string) => {
+  const saveVersion = useCallback((name?: string, authorName?: string) => {
     const current = stateRef.current;
+    const savedBy = authorName?.trim() || author;
     const previous = versionsRef.current[0]?.state;
     const changes = previous ? diffTrips(previous, current) : [];
     const version: TripVersion = {
@@ -154,7 +155,7 @@ export function TripProvider({ children }: { children: React.ReactNode }) {
       createdAt: new Date().toISOString(),
       state: structuredClone(current),
       pinned: true,
-      author: author || "Someone with the link",
+      author: savedBy || "Someone with the link",
       summary: changes.length ? changes.slice(0, 3).map((change) => `${change.label}: ${change.after}`).join(" · ") : "Saved the current plan",
     };
     const next = mergeVersions([version], versionsRef.current);

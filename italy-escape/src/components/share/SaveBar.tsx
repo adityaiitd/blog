@@ -15,8 +15,9 @@ export function SaveBar() {
   const [who, setWho] = useState(author);
 
   const commit = () => {
-    if (who.trim() && who !== author) setAuthor(who.trim());
-    saveVersion(label);
+    const name = who.trim();
+    if (name && name !== author) setAuthor(name);
+    saveVersion(label, name);
     setLabel("");
     setNaming(false);
   };
