@@ -27,7 +27,7 @@ export function TripProvider({ children }: { children: React.ReactNode }) {
   const [hydrated, setHydrated] = useState(false);
   const [hydrationError, setHydrationError] = useState<string>();
   const [peers, setPeers] = useState(0);
-  const [historyTick, setHistoryTick] = useState(0);
+  const [historyState, setHistoryState] = useState({ canUndo: false, canRedo: false });
   const undoStack = useRef<TripState[]>([]);
   const redoStack = useRef<TripState[]>([]);
   const stateRef = useRef(state);
@@ -36,17 +36,20 @@ export function TripProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => { stateRef.current = state; }, [state]);
 
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const encoded = params.get("t");
-    if (encoded) {
-      const result = decodeTripState(encoded);
-      if (result.state) baseDispatch({ type: "replace", state: result.state });
-      else setHydrationError(result.error);
-    } else {
-      const draft = loadDraft();
-      if (draft?.schemaVersion === 1) baseDispatch({ type: "replace", state: draft });
-    }
-    setHydrated(true);
+    const timer = window.setTimeout(() => {
+      const params = new URLSearchParams(window.location.search);
+      const encoded = params.get("t");
+      if (encoded) {
+        const result = decodeTripState(encoded);
+        if (result.state) baseDispatch({ type: "replace", state: result.state });
+        else setHydrationError(result.error);
+      } else {
+        const draft = loadDraft();
+        if (draft?.schemaVersion === 1) baseDispatch({ type: "replace", state: draft });
+      }
+      setHydrated(true);
+    }, 0);
+    return () => window.clearTimeout(timer);
   }, []);
 
   useEffect(() => {
@@ -75,7 +78,7 @@ export function TripProvider({ children }: { children: React.ReactNode }) {
     if (undoStack.current.length > 50) undoStack.current.shift();
     redoStack.current = [];
     baseDispatch(action);
-    setHistoryTick((value) => value + 1);
+    setHistoryState({ canUndo: true, canRedo: false });
   }, []);
 
   const undo = useCallback(() => {
@@ -83,14 +86,14 @@ export function TripProvider({ children }: { children: React.ReactNode }) {
     if (!previous) return;
     redoStack.current.push(structuredClone(stateRef.current));
     baseDispatch({ type: "replace", state: previous });
-    setHistoryTick((value) => value + 1);
+    setHistoryState({ canUndo: undoStack.current.length > 0, canRedo: true });
   }, []);
   const redo = useCallback(() => {
     const next = redoStack.current.pop();
     if (!next) return;
     undoStack.current.push(structuredClone(stateRef.current));
     baseDispatch({ type: "replace", state: next });
-    setHistoryTick((value) => value + 1);
+    setHistoryState({ canUndo: true, canRedo: redoStack.current.length > 0 });
   }, []);
   const reset = useCallback(() => dispatch({ type: "replace", state: freshInitialTripState() }), [dispatch]);
 
@@ -106,10 +109,10 @@ export function TripProvider({ children }: { children: React.ReactNode }) {
 
   const value = useMemo(() => ({
     state, dispatch, undo, redo,
-    canUndo: undoStack.current.length > 0,
-    canRedo: redoStack.current.length > 0,
+    canUndo: historyState.canUndo,
+    canRedo: historyState.canRedo,
     reset, hydrationError, peers,
-  }), [state, dispatch, undo, redo, reset, hydrationError, peers, historyTick]);
+  }), [state, dispatch, undo, redo, reset, hydrationError, peers, historyState]);
 
   return <TripContext.Provider value={value}>{children}</TripContext.Provider>;
 }

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Copy, MonitorPlay, Printer, RotateCcw, Save, Users, X } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { useTrip } from "@/components/site/TripProvider";
@@ -15,7 +15,6 @@ export function ShareBar() {
   const [message, setMessage] = useState("");
   const [versions, setVersions] = useState<TripVersion[]>([]);
   const [open, setOpen] = useState(false);
-  useEffect(() => setVersions(loadVersions()), []);
   const copy = async (collaborate = false) => {
     let url = shareUrl(state, window.location.href);
     if (collaborate) {
@@ -30,15 +29,17 @@ export function ShareBar() {
   const save = () => {
     const name = window.prompt("Name this version", `Italy escape · ${new Date().toLocaleDateString()}`);
     if (!name) return;
-    const next = [{ id: crypto.randomUUID(), name, createdAt: new Date().toISOString(), state: structuredClone(state) }, ...versions];
+    const next = [{ id: crypto.randomUUID(), name, createdAt: new Date().toISOString(), state: structuredClone(state) }, ...loadVersions()];
     setVersions(next); saveVersions(next); setOpen(true);
   };
+  const openVersions = () => { setVersions(loadVersions()); setOpen(true); };
   return (
     <div className="no-print">
       <div className="flex flex-wrap gap-2">
         <Button variant="outline" size="sm" onClick={() => copy()}><Copy size={14} />Copy link</Button>
         <Button variant="outline" size="sm" onClick={() => copy(true)}><Users size={14} />Collaborate</Button>
         <Button variant="outline" size="sm" onClick={save}><Save size={14} />Save version</Button>
+        <Button variant="quiet" size="sm" onClick={openVersions}>Versions</Button>
         <Link href="/present"><Button variant="outline" size="sm"><MonitorPlay size={14} />Present</Button></Link>
         <Link href="/print"><Button variant="outline" size="sm"><Printer size={14} />Print / PDF</Button></Link>
         <Button variant="quiet" size="sm" onClick={() => window.confirm("Reset every edit to the original itinerary?") && reset()}><RotateCcw size={14} />Reset</Button>

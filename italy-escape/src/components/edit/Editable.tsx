@@ -1,6 +1,5 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 
 const base = "w-full rounded-md border border-transparent bg-transparent px-2 py-1.5 transition hover:border-[var(--line)] focus:border-[var(--olive)] focus:bg-[var(--paper)] focus:outline-none";
@@ -8,11 +7,8 @@ const base = "w-full rounded-md border border-transparent bg-transparent px-2 py
 export function EditableText({ value, onChange, label, className, multiline = false }: {
   value: string; onChange: (value: string) => void; label: string; className?: string; multiline?: boolean;
 }) {
-  const [draft, setDraft] = useState(value);
-  useEffect(() => setDraft(value), [value]);
-  const commit = () => onChange(draft.trim() || value);
-  if (multiline) return <textarea aria-label={label} value={draft} onChange={(e) => setDraft(e.target.value)} onBlur={commit} onKeyDown={(e) => { if (e.key === "Escape") setDraft(value); }} className={cn(base, "min-h-20 resize-y", className)} />;
-  return <input aria-label={label} value={draft} onChange={(e) => setDraft(e.target.value)} onBlur={commit} onKeyDown={(e) => { if (e.key === "Enter") e.currentTarget.blur(); if (e.key === "Escape") { setDraft(value); e.currentTarget.blur(); } }} className={cn(base, className)} />;
+  if (multiline) return <textarea aria-label={label} value={value} onChange={(e) => onChange(e.target.value)} className={cn(base, "min-h-20 resize-y", className)} />;
+  return <input aria-label={label} value={value} onChange={(e) => onChange(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") e.currentTarget.blur(); }} className={cn(base, className)} />;
 }
 
 export function EditableNumber({ value, onChange, label, prefix, suffix, min = 0, max = 1_000_000, className }: {
