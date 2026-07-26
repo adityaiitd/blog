@@ -24,7 +24,7 @@ function HotelCard({ hotel, nightsUsed, onSelect, onRateChange }: {
 }) {
   const inUse = nightsUsed > 0;
   const [active, setActive] = useState(0);
-  const photos = hotel.photos.length > 0 ? hotel.photos : [{ url: hotel.image, caption: `${hotel.region} landscape`, credit: "Illustrative destination image" }];
+  const photos = hotel.photos?.length ? hotel.photos : [{ url: hotel.image, caption: `${hotel.region} landscape`, credit: "Destination image" }];
   const photo = photos[Math.min(active, photos.length - 1)];
   return (
     <article className={cn("overflow-hidden border transition", inUse ? "border-[var(--ink)]" : "border-[var(--line)]")}>
@@ -54,7 +54,7 @@ function HotelCard({ hotel, nightsUsed, onSelect, onRateChange }: {
         <p className="mt-4 text-sm leading-6">{hotel.whyPick}</p>
         <p className="mt-3 text-xs text-[var(--muted)]">{hotel.viewSummary}</p>
         <div className="mt-3 flex flex-wrap gap-2 text-[9px] uppercase tracking-wider">
-          {hotel.pools.map((pool) => <span key={pool} className="flex items-center gap-1 rounded-full bg-[var(--surface)] px-2 py-1"><Waves size={11} />{pool}</span>)}
+          {(hotel.pools ?? []).map((pool) => <span key={pool} className="flex items-center gap-1 rounded-full bg-[var(--surface)] px-2 py-1"><Waves size={11} />{pool}</span>)}
           {hotel.rooftop && <span className="rounded-full bg-[var(--surface)] px-2 py-1">Rooftop</span>}
           {hotel.waterfront && <span className="rounded-full bg-[var(--surface)] px-2 py-1">On the water</span>}
         </div>

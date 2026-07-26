@@ -41,13 +41,18 @@ export function TripProvider({ children }: { children: React.ReactNode }) {
     const timer = window.setTimeout(() => {
       const params = new URLSearchParams(window.location.search);
       const encoded = params.get("t");
-      if (encoded) {
-        const result = decodeTripState(encoded);
-        if (result.state) baseDispatch({ type: "replace", state: normalizeTripState(result.state) });
-        else setHydrationError(result.error);
-      } else {
-        const draft = loadDraft();
-        if (draft?.schemaVersion === 1) baseDispatch({ type: "replace", state: normalizeTripState(draft) });
+      // A damaged draft or link must never take the page down; fall back to the seeded trip.
+      try {
+        if (encoded) {
+          const result = decodeTripState(encoded);
+          if (result.state) baseDispatch({ type: "replace", state: normalizeTripState(result.state) });
+          else setHydrationError(result.error);
+        } else {
+          const draft = loadDraft();
+          if (draft?.schemaVersion === 1) baseDispatch({ type: "replace", state: normalizeTripState(draft) });
+        }
+      } catch {
+        setHydrationError("Your saved draft was from an older version, so the original itinerary was restored.");
       }
       setHydrated(true);
     }, 0);
