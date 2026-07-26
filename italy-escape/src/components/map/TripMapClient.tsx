@@ -9,7 +9,7 @@ import { addDays, format, parseISO } from "date-fns";
 import { useTrip } from "@/components/site/TripProvider";
 import { Button } from "@/components/ui/Button";
 import { EditableNumber, EditableText, Field } from "@/components/edit/Editable";
-import { hotelTotal, money } from "@/lib/costCalculator";
+import { boatCharter, hotelTotal, money, selectedOption } from "@/lib/costCalculator";
 import type { TransportMode } from "@/lib/types";
 
 const routeStyle: Record<TransportMode, L.PathOptions> = {
@@ -69,7 +69,7 @@ export default function TripMapClient() {
       {(hotelSelection || boatSelection) && <aside className="absolute bottom-4 right-4 z-[600] w-[calc(100%-2rem)] max-w-md bg-[color:var(--paper)/.97] p-6 shadow-2xl backdrop-blur">
         <div className="mb-5 flex justify-between"><p className="eyebrow">{hotelSelection ? "Hotel stay" : "Boat day"}</p><Button variant="quiet" size="icon" onClick={() => setSelected(undefined)}><X size={17} /></Button></div>
         {hotelSelection && (() => { const stay = state.stays.find((item) => item.hotelId === hotelSelection.id); return <><EditableText value={hotelSelection.name} onChange={(name) => dispatch({ type: "update-hotel", id: hotelSelection.id, patch: { name } })} label="Hotel name" className="font-serif text-3xl" /><div className="mt-5 grid grid-cols-2 gap-4"><Field label="Nightly rate"><EditableNumber value={hotelSelection.nightlyRate} onChange={(nightlyRate) => dispatch({ type: "update-hotel", id: hotelSelection.id, patch: { nightlyRate } })} label="Nightly rate" prefix="$" /></Field><div><p className="eyebrow">Stay total</p><strong>{money(hotelTotal(hotelSelection, stay?.nights ?? 0))}</strong></div></div></>; })()}
-        {boatSelection && (() => { const tier = state.stays.find((stay) => stay.region === boatSelection.region)?.tier ?? "luxury"; return <><EditableText value={boatSelection.name} onChange={(name) => dispatch({ type: "update-boat", id: boatSelection.id, patch: { name } })} label="Boat name" className="font-serif text-3xl" /><p className="mt-2 text-sm text-[var(--muted)]">{boatSelection.departureTime}–{boatSelection.returnTime} · {tier === "value" ? boatSelection.valueVessel : boatSelection.vesselType}</p><div className="mt-5"><Field label={`Charter budget · ${tier}`}><EditableNumber value={tier === "value" ? boatSelection.valueBudget : boatSelection.budget} onChange={(value) => dispatch({ type: "update-boat", id: boatSelection.id, patch: tier === "value" ? { valueBudget: value } : { budget: value } })} label="Boat budget" prefix="$" /></Field></div></>; })()}
+        {boatSelection && (() => { const option = selectedOption(boatSelection); return <><EditableText value={boatSelection.name} onChange={(name) => dispatch({ type: "update-boat", id: boatSelection.id, patch: { name } })} label="Boat name" className="font-serif text-3xl" /><p className="mt-2 text-sm text-[var(--muted)]">Departs {boatSelection.departureTime} · {option?.label}</p><div className="mt-5"><Field label="Operator"><select value={boatSelection.selectedOptionId} onChange={(event) => dispatch({ type: "update-boat", id: boatSelection.id, patch: { selectedOptionId: event.target.value } })} className="w-full rounded-md bg-transparent p-2 text-sm">{boatSelection.options.map((item) => <option key={item.id} value={item.id}>{item.operator} — {money(item.price)}</option>)}</select></Field></div><p className="mt-3 text-sm"><strong>{money(boatCharter(boatSelection))}</strong> charter</p></>; })()}
       </aside>}
     </div>
     <aside className="max-h-[76vh] overflow-y-auto border border-[var(--line)] p-4" aria-label="Trip stops">
@@ -91,7 +91,7 @@ export default function TripMapClient() {
       {state.boats.map((boat) => {
         const day = state.days.find((item) => item.id === boat.dayId);
         return <button key={boat.id} onClick={() => setSelected({ kind: "boat", id: boat.id })} className={`mb-3 block w-full border-t border-[var(--line)] pt-3 text-left text-sm ${boatSelection?.id === boat.id ? "font-semibold text-[var(--ink)]" : "text-[var(--muted)]"}`}>
-          {boat.name}<span className="block text-xs">{day ? format(addDays(parseISO(state.startDate), day.offset), "EEE, MMM d") : ""} · {money(boat.budget)}</span>
+          {boat.name}<span className="block text-xs">{day ? format(addDays(parseISO(state.startDate), day.offset), "EEE, MMM d") : ""} · {money(boatCharter(boat))}</span>
         </button>;
       })}
     </aside>

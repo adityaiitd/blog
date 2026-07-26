@@ -12,7 +12,7 @@ describe("split stay recommendations", () => {
   it("puts Amalfi's harbour nights first, covering arrival and both sailing days", () => {
     const state = freshInitialTripState();
     const stay = state.stays.find((item) => item.region === "Amalfi Coast")!;
-    expect(recommendedNightAssignments(stay, state)).toEqual(["ferraioli", "ferraioli", "ferraioli", "anantara", "anantara"]);
+    expect(recommendedNightAssignments(stay, state)).toEqual(["onda-verde", "onda-verde", "onda-verde", "anantara", "anantara"]);
   });
 
   it("leaves a region with no boat days on a single hotel", () => {

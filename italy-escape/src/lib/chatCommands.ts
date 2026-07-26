@@ -1,5 +1,5 @@
 import { format } from "date-fns";
-import { calculateCosts, fitToTarget, money } from "./costCalculator";
+import { boatCharter, calculateCosts, fitToTarget, money } from "./costCalculator";
 import { dateForOffset } from "./schedule";
 import { recommendedNightAssignments } from "./splitStay";
 import type { TripAction, TripState, TripTier } from "./types";
@@ -15,8 +15,8 @@ export function interpretTripCommand(input: string, state: TripState): ChatResul
   if (!text) return { reply: "Tell me what you would like to change.", actions: [] };
 
   if (/boat.*(?:price|budget|expensive)|why.*boat/.test(lower)) {
-    const charters = state.boats.reduce((sum, boat) => sum + boat.budget, 0);
-    return { reply: `Checked against Viator listings for these exact routes: La Maddalena private with skipper from about $880, Amalfi to Capri private from €1,090. Those cover 8–12 guests, so for two the plan budgets ${money(charters)} across four days instead of the original $14,000.`, actions: [] };
+    const charters = state.boats.reduce((sum, boat) => sum + boatCharter(boat), 0);
+    return { reply: `All four days are private boats, priced per boat from each operator's own page: a €1,100 full day in Palau, €400 half days, €379 for four private hours around Capri. That is ${money(charters)} in charters for the two of you, against the original $14,000.`, actions: [] };
   }
   if (/review|rating|pool|rooftop/.test(lower)) {
     const rated = state.hotels.filter((hotel) => hotel.verified && hotel.rating > 0)

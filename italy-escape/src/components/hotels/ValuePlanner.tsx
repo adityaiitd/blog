@@ -4,7 +4,7 @@ import Image from "next/image";
 import { Check, Sparkles, WalletCards } from "lucide-react";
 import { useTrip } from "@/components/site/TripProvider";
 import { Button } from "@/components/ui/Button";
-import { hotelTotal, hotelsTotal, money } from "@/lib/costCalculator";
+import { boatCharter, boatGratuity, hotelTotal, hotelsTotal, money } from "@/lib/costCalculator";
 import type { TripTier } from "@/lib/types";
 
 const image: Record<string, string> = { Sardinia: "/images/cala-di-volpe.webp", Tuscany: "/images/val-dorcia.webp", "Amalfi Coast": "/images/positano.webp" };
@@ -15,9 +15,11 @@ export function ValuePlanner() {
     const luxury = state.hotels.find((hotel) => hotel.region === stay.region && hotel.tier === "luxury" && hotel.recommended) ?? state.hotels.find((hotel) => hotel.region === stay.region && hotel.tier === "luxury");
     const value = state.hotels.find((hotel) => hotel.region === stay.region && hotel.tier === "value" && hotel.recommended) ?? state.hotels.find((hotel) => hotel.region === stay.region && hotel.tier === "value");
     const boats = state.boats.filter((boat) => boat.region === stay.region);
-    const luxuryTotal = (luxury ? hotelTotal(luxury, stay.nights) : 0) + boats.reduce((sum, boat) => sum + boat.budget + boat.gratuity, 0);
-    const valueTotal = (value ? hotelTotal(value, stay.nights) : 0) + boats.reduce((sum, boat) => sum + boat.valueBudget + boat.gratuity, 0);
-    const currentBoats = boats.reduce((sum, boat) => sum + (stay.tier === "value" ? boat.valueBudget : boat.budget) + boat.gratuity, 0);
+    const dearestBoats = boats.reduce((sum, boat) => sum + Math.max(...boat.options.map((option) => option.price)) * (1 + boat.gratuityPercent / 100), 0);
+    const cheapestBoats = boats.reduce((sum, boat) => sum + Math.min(...boat.options.map((option) => option.price)) * (1 + boat.gratuityPercent / 100), 0);
+    const luxuryTotal = (luxury ? hotelTotal(luxury, stay.nights) : 0) + dearestBoats;
+    const valueTotal = (value ? hotelTotal(value, stay.nights) : 0) + cheapestBoats;
+    const currentBoats = boats.reduce((sum, boat) => sum + boatCharter(boat) + boatGratuity(boat), 0);
     const currentTotal = hotelsTotal(state.hotels, [stay]) + currentBoats;
     return { stay, luxury, value, luxuryTotal, valueTotal, currentTotal, savings: luxuryTotal - valueTotal };
   });

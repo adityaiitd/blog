@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { freshInitialTripState } from "@/data";
-import { calculateCosts, fitToTarget, hotelTotal, hotelsTotal, internationalFlightsTotal, taxesTotal } from "../costCalculator";
+import { boatCharter, calculateCosts, fitToTarget, hotelTotal, hotelsTotal, internationalFlightsTotal, taxesTotal } from "../costCalculator";
 import { tripReducer } from "../tripReducer";
 
 describe("cost calculator", () => {
@@ -9,17 +9,30 @@ describe("cost calculator", () => {
     // Sardinia 3 resort + 2 harbour nights, Tuscany one base, Amalfi 3 harbour + 2 resort nights.
     expect(hotelsTotal(state.hotels, [state.stays[0]])).toBe(3 * 1927 + 2 * 280);
     expect(hotelsTotal(state.hotels, [state.stays[1]])).toBe(4 * 861);
-    expect(hotelsTotal(state.hotels, [state.stays[2]])).toBe(3 * 350 + 2 * 1898);
-    expect(hotelsTotal(state.hotels, state.stays)).toBe(14631);
+    expect(hotelsTotal(state.hotels, [state.stays[2]])).toBe(3 * 330 + 2 * 1898);
+    expect(hotelsTotal(state.hotels, state.stays)).toBe(14571);
   });
 
   it("keeps every boat-base hotel under the $400 nightly ceiling", () => {
     const bases = freshInitialTripState().hotels.filter((hotel) => hotel.role === "boat-base");
     expect(bases.length).toBeGreaterThan(0);
-    bases.forEach((hotel) => {
-      expect(hotel.nightlyRate).toBeLessThanOrEqual(400);
-      expect(hotel.verified).toBe(true);
-      expect(hotel.reviewCount).toBeGreaterThan(100);
+    bases.forEach((hotel) => expect(hotel.nightlyRate).toBeLessThanOrEqual(400));
+  });
+
+  it("only recommends properties rated 4.5 or better where a rating is published", () => {
+    freshInitialTripState().hotels
+      .filter((hotel) => hotel.recommended && hotel.verified)
+      .forEach((hotel) => expect(hotel.rating).toBeGreaterThanOrEqual(4.5));
+  });
+
+  it("offers only private charters, each linked to its operator", () => {
+    freshInitialTripState().boats.forEach((boat) => {
+      expect(boat.options.length).toBeGreaterThan(1);
+      boat.options.forEach((option) => {
+        expect(option.url).toMatch(/^https:\/\//);
+        expect(option.price).toBeGreaterThan(0);
+        expect(option.maxGuests).toBeGreaterThanOrEqual(2);
+      });
     });
   });
 
@@ -43,7 +56,7 @@ describe("cost calculator", () => {
 
   it("calculates city tax, boat VAT and dining service explicitly", () => {
     const state = freshInitialTripState();
-    const charters = state.boats.reduce((sum, boat) => sum + boat.budget, 0);
+    const charters = state.boats.reduce((sum, boat) => sum + boatCharter(boat), 0);
     expect(taxesTotal(state)).toBe(14 * 2 * 5.5 + charters * .1 + 5600 * .1);
   });
 

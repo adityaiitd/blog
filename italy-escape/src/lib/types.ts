@@ -6,6 +6,31 @@ export type WeatherStatus = "forecast-pending" | "go" | "watch" | "cancelled";
 export type TripTier = "luxury" | "value";
 /** Signature hotels earn resort days; boat bases keep money out of rooms you barely use. */
 export type HotelRole = "signature" | "boat-base";
+
+/** Real photographs served from the property's own CDN or its Booking.com listing. */
+export interface HotelPhoto {
+  url: string;
+  caption: string;
+  credit: string;
+}
+
+/** A bookable private charter with a published, checkable price. */
+export interface BoatOption {
+  id: string;
+  operator: string;
+  label: string;
+  hours: number;
+  price: number;
+  priceNote: string;
+  maxGuests: number;
+  rating: number;
+  reviewCount: number;
+  reviewSource: string;
+  url: string;
+  includes: string[];
+  excludes: string[];
+  note?: string;
+}
 export type ActivityVenue = "hotel" | "boat" | "public" | "transit";
 export type ActivityPurpose = "eat" | "see" | "walk" | "relax" | "travel" | "sail";
 
@@ -96,6 +121,8 @@ export interface HotelOption {
   reviewSource: string;
   reviewUrl: string;
   verified: boolean;
+  bookingUrl: string;
+  photos: HotelPhoto[];
 }
 
 export interface Stay {
@@ -114,27 +141,17 @@ export interface BoatExcursion {
   region: string;
   dayId: string;
   departureTime: string;
-  returnTime: string;
-  vesselType: string;
   captain: string;
-  fuelIncluded: boolean;
   lunchArrangement: string;
   vegetarianRequired: boolean;
   weatherStatus: WeatherStatus;
   backupDayId?: string;
-  budget: number;
-  gratuity: number;
+  gratuityPercent: number;
   status: BookingStatus;
   waypointIds: string[];
-  valueBudget: number;
-  valueVessel: string;
-  priceSourceUrl: string;
-  priceSourceName: string;
   priceRationale: string;
-  rating: number;
-  reviewCount: number;
-  excludes: string[];
-  verified: boolean;
+  options: BoatOption[];
+  selectedOptionId: string;
 }
 
 export interface CostCategory {

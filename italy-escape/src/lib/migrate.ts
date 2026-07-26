@@ -43,19 +43,23 @@ export function normalizeTripState(input: TripState): TripState {
         rationale: activity.rationale ?? "Chosen to add a strong sense of place without overloading the day.",
       })),
     })),
-    boats: input.boats.map((boat) => {
-      const fallback = defaults.boats.find((candidate) => candidate.id === boat.id);
+    // Charter pricing moved to operator options, so older drafts adopt the current catalogue.
+    boats: defaults.boats.map((fallback) => {
+      const saved = input.boats.find((candidate) => candidate.id === fallback.id);
+      if (!saved) return fallback;
       return {
         ...fallback,
-        ...boat,
-        waypointIds: boat.waypointIds ?? fallback?.waypointIds ?? [],
-        valueBudget: boat.valueBudget ?? Math.round(boat.budget * .5),
-        valueVessel: boat.valueVessel ?? "Shared charter",
-        priceSourceName: boat.priceSourceName ?? fallback?.priceSourceName ?? "Viator",
-        rating: boat.rating ?? fallback?.rating ?? 0,
-        reviewCount: boat.reviewCount ?? fallback?.reviewCount ?? 0,
-        excludes: boat.excludes ?? fallback?.excludes ?? [],
-        verified: boat.verified ?? fallback?.verified ?? false,
+        dayId: saved.dayId ?? fallback.dayId,
+        backupDayId: saved.backupDayId ?? fallback.backupDayId,
+        captain: saved.captain ?? fallback.captain,
+        departureTime: saved.departureTime ?? fallback.departureTime,
+        lunchArrangement: saved.lunchArrangement ?? fallback.lunchArrangement,
+        vegetarianRequired: saved.vegetarianRequired ?? fallback.vegetarianRequired,
+        weatherStatus: saved.weatherStatus ?? fallback.weatherStatus,
+        status: saved.status ?? fallback.status,
+        selectedOptionId: fallback.options.some((option) => option.id === saved.selectedOptionId)
+          ? saved.selectedOptionId
+          : fallback.selectedOptionId,
       };
     }),
     destinations: input.destinations.some((place) => place.waypoint)

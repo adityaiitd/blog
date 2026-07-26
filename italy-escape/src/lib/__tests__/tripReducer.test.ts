@@ -26,7 +26,7 @@ describe("trip reducer", () => {
   it("switches only the requested region to its recommended value hotel", () => {
     const state = freshInitialTripState();
     const next = tripReducer(state, { type: "set-region-tier", stayId: "stay-amalfi", tier: "value" });
-    expect(next.stays.find((stay) => stay.id === "stay-amalfi")).toMatchObject({ tier: "value", hotelId: "ferraioli" });
+    expect(next.stays.find((stay) => stay.id === "stay-amalfi")).toMatchObject({ tier: "value", hotelId: "onda-verde" });
     expect(next.stays.find((stay) => stay.id === "stay-sardinia")?.tier).toBe("luxury");
   });
 

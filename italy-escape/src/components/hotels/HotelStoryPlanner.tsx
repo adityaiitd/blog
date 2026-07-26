@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { useState } from "react";
 import { addDays, format, parseISO } from "date-fns";
 import { Anchor, ExternalLink, Sparkles, Waves } from "lucide-react";
 import { useTrip } from "@/components/site/TripProvider";
@@ -22,17 +23,31 @@ function HotelCard({ hotel, nightsUsed, onSelect, onRateChange }: {
   hotel: HotelOption; nightsUsed: number; onSelect: () => void; onRateChange: (value: number) => void;
 }) {
   const inUse = nightsUsed > 0;
+  const [active, setActive] = useState(0);
+  const photos = hotel.photos.length > 0 ? hotel.photos : [{ url: hotel.image, caption: `${hotel.region} landscape`, credit: "Illustrative destination image" }];
+  const photo = photos[Math.min(active, photos.length - 1)];
   return (
     <article className={cn("overflow-hidden border transition", inUse ? "border-[var(--ink)]" : "border-[var(--line)]")}>
-      <div className="relative h-48">
-        <Image src={hotel.image} alt={`${hotel.region} landscape`} fill sizes="(min-width:1280px) 28vw, 100vw" className="object-cover" />
-        <div className="absolute inset-0 bg-black/20" />
+      <div className="relative h-64">
+        <Image src={photo.url} alt={`${hotel.name} — ${photo.caption}`} fill sizes="(min-width:1280px) 45vw, 100vw" className="object-cover" unoptimized={photo.url.startsWith("http")} />
         <span className="absolute left-4 top-4 flex items-center gap-1 rounded-full bg-[var(--paper)] px-3 py-1 text-[9px] uppercase tracking-wider">
           {hotel.role === "boat-base" ? <Anchor size={11} /> : <Sparkles size={11} />}
           {hotel.role === "boat-base" ? "Boat-day base" : "Signature stay"}
         </span>
         {inUse && <span className="on-ink absolute right-4 top-4 rounded-full bg-[var(--ink)] px-3 py-1 text-[9px] uppercase tracking-wider">{nightsUsed} {nightsUsed === 1 ? "night" : "nights"}</span>}
+        <div className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-3 bg-gradient-to-t from-black/70 to-transparent p-3">
+          <p className="text-xs text-white">{photo.caption} <span className="text-white/60">· {photo.credit}</span></p>
+        </div>
       </div>
+      {photos.length > 1 && (
+        <div className="flex gap-2 overflow-x-auto border-b border-[var(--line)] p-2">
+          {photos.map((item, index) => (
+            <button key={item.url} onClick={() => setActive(index)} aria-label={`Show photo: ${item.caption}`} aria-current={index === active} className={cn("relative h-14 w-20 shrink-0 overflow-hidden border", index === active ? "border-[var(--ink)]" : "border-transparent opacity-70 hover:opacity-100")}>
+              <Image src={item.url} alt="" fill sizes="80px" className="object-cover" unoptimized={item.url.startsWith("http")} />
+            </button>
+          ))}
+        </div>
+      )}
       <div className="p-5">
         <h3 className="font-serif text-2xl">{hotel.name}</h3>
         <div className="mt-2"><ReviewBadge rating={hotel.rating} scale={hotel.ratingScale} count={hotel.reviewCount} source={hotel.reviewSource} url={hotel.reviewUrl} /></div>
@@ -53,12 +68,15 @@ function HotelCard({ hotel, nightsUsed, onSelect, onRateChange }: {
             <EditableNumber value={hotel.nightlyRate} onChange={onRateChange} label={`${hotel.name} nightly rate`} prefix="$" suffix="/ night" className="w-40 font-serif text-xl" />
             <div className="mt-2"><VerifyChip verified={hotel.verified} sourceName={hotel.reviewSource} sourceUrl={hotel.reviewUrl} /></div>
           </div>
-          <div className="flex flex-wrap gap-2">
-            <Button size="sm" variant={inUse ? "primary" : "outline"} onClick={onSelect}>{inUse ? "In the plan" : "Use for this leg"}</Button>
-            <a href={hotel.roomsUrl} target="_blank" rel="noreferrer"><Button size="sm" variant="outline">Rooms <ExternalLink size={12} /></Button></a>
-          </div>
+          <Button size="sm" variant={inUse ? "primary" : "outline"} onClick={onSelect}>{inUse ? "In the plan" : "Use for this leg"}</Button>
         </div>
         {inUse && <p className="mt-3 text-xs text-[var(--muted)]">{money(hotelTotal(hotel, nightsUsed))} for {nightsUsed} {nightsUsed === 1 ? "night" : "nights"}</p>}
+        <div className="mt-4 flex flex-wrap gap-2 border-t border-[var(--line)] pt-4">
+          <a href={hotel.officialUrl} target="_blank" rel="noreferrer"><Button size="sm" variant="outline">Official site <ExternalLink size={12} /></Button></a>
+          <a href={hotel.roomsUrl} target="_blank" rel="noreferrer"><Button size="sm" variant="outline">Rooms &amp; photos <ExternalLink size={12} /></Button></a>
+          <a href={hotel.bookingUrl} target="_blank" rel="noreferrer"><Button size="sm" variant="outline">Check rates <ExternalLink size={12} /></Button></a>
+          <a href={hotel.reviewUrl} target="_blank" rel="noreferrer"><Button size="sm" variant="outline">Reviews <ExternalLink size={12} /></Button></a>
+        </div>
       </div>
     </article>
   );
