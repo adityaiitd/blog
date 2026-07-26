@@ -9,7 +9,10 @@ export function normalizeTripState(input: TripState): TripState {
     ...input,
     taxSettings: input.taxSettings ?? defaults.taxSettings,
     stays: input.stays.map((stay) => ({ ...stay, tier: stay.tier ?? "luxury" })),
-    hotels: input.hotels.map((hotel) => ({ ...hotel, tier: hotel.tier ?? "luxury" })),
+    hotels: [
+      ...input.hotels.map((hotel) => ({ ...hotel, tier: hotel.tier ?? "luxury" as const })),
+      ...defaults.hotels.filter((hotel) => !input.hotels.some((candidate) => candidate.id === hotel.id)),
+    ],
     routeLegs: input.routeLegs.map((leg) => ({
       ...leg,
       cabin: leg.cabin ?? (leg.mode.includes("flight") ? "economy" : undefined),
@@ -35,5 +38,9 @@ export function normalizeTripState(input: TripState): TripState {
     destinations: input.destinations.some((place) => place.waypoint)
       ? input.destinations
       : [...input.destinations, ...defaults.destinations.filter((place) => place.waypoint)],
+    costs: [
+      ...input.costs,
+      ...defaults.costs.filter((category) => !input.costs.some((candidate) => candidate.id === category.id)),
+    ],
   };
 }

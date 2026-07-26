@@ -50,7 +50,14 @@ export function loadHistory(): TripVersion[] {
 }
 
 export function saveHistory(versions: TripVersion[]) {
-  localStorage.setItem(HISTORY_KEY, JSON.stringify(pruneHistory(versions)));
+  const pruned = pruneHistory(versions);
+  try {
+    localStorage.setItem(HISTORY_KEY, JSON.stringify(pruned));
+  } catch {
+    const pinned = pruned.filter((version) => version.pinned);
+    const recent = pruned.filter((version) => !version.pinned).slice(0, 40);
+    try { localStorage.setItem(HISTORY_KEY, JSON.stringify([...pinned, ...recent])); } catch { /* Named versions may fill private-browser quotas; editing still works. */ }
+  }
 }
 
 export function recordAutoVersion(state: TripState) {
