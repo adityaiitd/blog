@@ -23,7 +23,7 @@ export function AddHotel({ stay }: { stay: Stay }) {
     setStatus("searching");
     setChosen(null);
     try {
-      const response = await fetch(`/api/place-lookup?q=${encodeURIComponent(`${query} ${stay.region}`)}`);
+      const response = await fetch(`/api/place-lookup?q=${encodeURIComponent(query.trim())}`);
       const data = await response.json();
       setMatches(data.matches ?? []);
     } catch {
