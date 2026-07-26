@@ -32,8 +32,8 @@ function HotelCard({ hotel, nightsUsed, onSelect, onRateChange }: {
       <div className="relative h-64">
         <Image src={photo.url} alt={`${hotel.name} — ${photo.caption}`} fill sizes="(min-width:1280px) 45vw, 100vw" className="object-cover" />
         <span className="absolute left-4 top-4 flex items-center gap-1 rounded-full bg-[var(--paper)] px-3 py-1 text-[9px] uppercase tracking-wider">
-          {hotel.role === "signature" ? <Sparkles size={11} /> : <Anchor size={11} />}
-          {hotel.role === "boat-base" ? "Boat-day base" : hotel.role === "value-stay" ? "Under $500" : "Signature stay"}
+          {hotel.role === "boat-base" ? <Anchor size={11} /> : <Sparkles size={11} />}
+          {hotel.role === "boat-base" ? "Boat-day base" : hotel.nightlyRate < 500 ? "Under $500" : "Signature stay"}
         </span>
         {inUse && <span className="on-ink absolute right-4 top-4 rounded-full bg-[var(--ink)] px-3 py-1 text-[9px] uppercase tracking-wider">{nightsUsed} {nightsUsed === 1 ? "night" : "nights"}</span>}
         <div className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-3 bg-gradient-to-t from-black/70 to-transparent p-3">
