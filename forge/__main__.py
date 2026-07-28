@@ -189,8 +189,11 @@ def cmd_field(args: argparse.Namespace) -> int:
     transformer = build_planar_transformer(
         "cell", core, 4, 1, 1, 4, 104.4e-6, 0.1e-3, barrier_thickness_m=0.4e-3
     )
-    result = characterise(transformer, args.frequency, Path(args.out))
+    result = characterise(transformer, args.frequency, Path(args.out),
+                          include_harmonic=args.harmonic)
     print("  " + result.describe())
+    print(f"  open-circuit {result.l_open_h*1e6:.4f} uH, leakage "
+          f"{result.l_leakage_h*1e9:.2f} nH, coupling {result.coupling:.4f}")
     print(f"  mesh converged: {result.mesh_converged} ({result.mesh_detail})")
     for order, resistance in result.r_ac_ohm.items():
         print(f"    harmonic {order}: R_ac {resistance*1e3:.3f} mohm")
@@ -366,6 +369,8 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--core", default="ELP18/4/10withI18/2/10")
     p.add_argument("--material", default="3F46")
     p.add_argument("--frequency", type=float, default=2e6)
+    p.add_argument("--harmonic", action="store_true",
+                   help="also attempt the AC resistance solve (very slow)")
     p.set_defaults(func=cmd_field)
 
     p = sub.add_parser("sourcing", help="prices and cost model")

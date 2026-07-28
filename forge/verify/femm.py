@@ -197,17 +197,31 @@ def extract_inductances(
     conducts at any instant. Balancing both halves at once would model a
     condition the converter never sees.
     """
-    primary_turns = sum(
-        c.turns for c in transformer.stackup.by_winding("primary")
-    )
-    secondary_layers = transformer.stackup.by_winding("secondary_a")
-    secondary_turns = secondary_layers[0].turns if secondary_layers else 1
+    # Amp-turn balance has to be computed from what the model actually
+    # contains, not from the nameplate turns ratio.
+    #
+    # Every conductor block in a FEMM circuit carries the full circuit current
+    # multiplied by that block's turn count, so a winding spread over several
+    # parallel layers contributes once per layer. Using the 4:1 turns ratio
+    # here drove four times the intended secondary amp-turns and produced a
+    # negative short-circuit inductance, which is how the error announced
+    # itself.
+    def amp_turns_per_amp(winding: str) -> float:
+        return float(sum(
+            len(transformer.turns_on(layer.index)) * max(layer.turns, 1)
+            for layer in transformer.stackup.by_winding(winding)
+        ))
+
+    primary_at = amp_turns_per_amp("primary")
+    secondary_at = amp_turns_per_amp("secondary_a")
+    if secondary_at <= 0:
+        raise FemmError("no secondary_a conductors in the model")
 
     open_solution = solve(
         transformer, frequency_hz, {"primary": 1.0}, workdir, mesh_size_mm,
         femm_path,
     )
-    balance = -primary_turns / max(secondary_turns, 1)
+    balance = -primary_at / secondary_at
     short_solution = solve(
         transformer, frequency_hz,
         {"primary": 1.0, "secondary_a": balance}, workdir, mesh_size_mm,
@@ -281,8 +295,21 @@ def characterise(
     workdir: Optional[Path] = None,
     harmonics: Sequence[int] = (1, 3, 5),
     femm_path: Optional[Path] = None,
+    include_harmonic: bool = False,
 ) -> FieldResult:
-    """Full 2D characterisation, or an explicit UNVERIFIED result if FEMM is absent."""
+    """2D characterisation: inductances always, AC resistance only on request.
+
+    The inductances come from magnetostatic solves, which need only resolve the
+    geometry and finish in seconds.
+
+    AC resistance is off by default because it is not practical here. At 2 MHz
+    the skin depth in copper is 56 um, thinner than the 104 um copper itself,
+    so a harmonic solve has to resolve sub-10 um features across a 30 mm
+    domain. On this machine a single such solve did not finish in 900 seconds
+    at the coarsest mesh in the convergence set. Enabling it is supported, but
+    the honest default is to leave AC resistance to the analytic model and say
+    so rather than quietly shipping an unconverged field result.
+    """
     if not femm_available(femm_path):
         return FieldResult(
             l_open_h=0.0, l_short_h=0.0, r_ac_ohm={}, frequency_hz=frequency_hz,
@@ -295,20 +322,32 @@ def characterise(
     owns_dir = workdir is None
     work = Path(workdir or tempfile.mkdtemp(prefix="forge-femm-"))
     try:
+        # Inductance is a magnetostatic question; solving it at frequency
+        # would demand skin-depth resolution for no benefit.
         converged, detail, _ = mesh_convergence(
-            transformer, frequency_hz, work, femm_path=femm_path
+            transformer, 0.0, work, femm_path=femm_path
         )
         l_open, l_short, _ = extract_inductances(
-            transformer, frequency_hz, work, femm_path=femm_path
+            transformer, 0.0, work, femm_path=femm_path
         )
-        resistances = rac_by_harmonic(
-            transformer, frequency_hz, harmonics, work, femm_path=femm_path
-        )
+
+        resistances: Dict[int, float] = {}
+        unsupported = list(unsupported_features())
+        if include_harmonic:
+            resistances = rac_by_harmonic(
+                transformer, frequency_hz, harmonics, work, femm_path=femm_path
+            )
+        else:
+            unsupported.append(
+                "AC resistance: the harmonic solve is impractical at this "
+                "frequency because the skin depth is thinner than the copper; "
+                "R_ac remains the analytic Dowell estimate"
+            )
+
         return FieldResult(
             l_open_h=l_open, l_short_h=l_short, r_ac_ohm=resistances,
             frequency_hz=frequency_hz, mesh_converged=converged,
-            mesh_detail=detail, unsupported=unsupported_features(),
-            verified=True,
+            mesh_detail=detail, unsupported=unsupported, verified=True,
         )
     finally:
         if owns_dir:
