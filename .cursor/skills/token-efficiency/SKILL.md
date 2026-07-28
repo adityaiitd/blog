@@ -95,15 +95,19 @@ The two halves have different available scopes:
 Installer usage:
 
 ```bash
-scripts/install-global.sh                        # skill -> ~/.cursor/skills, rule -> clipboard
+scripts/install-global.sh                        # skill -> <home>/.cursor/skills, rule -> clipboard
 scripts/install-global.sh --repo ~/code/app      # also drop the .mdc into another repo
+scripts/install-global.sh --dest /mnt/c/Users/me # install into an additional home directory
 scripts/install-global.sh --verify               # report what is installed where
 scripts/install-global.sh --print-rule           # just print the User Rules text
 ```
 
 A skill that appears in one Cursor window but not another is almost always installed at
 project level only; `--verify` distinguishes the two, since a copy under a repository's
-`.cursor/skills/` is visible in that project alone.
+`.cursor/skills/` is visible in that project alone. The other causes are a home
+directory Cursor does not read - running under `sudo`, or running inside WSL while
+Cursor runs on Windows and reads the Windows profile. The installer detects WSL and
+writes to both homes; `--dest` covers anything unusual.
 
 Skills are discovered when Cursor starts, so restart after installing one and confirm it
 appears under Customize -> Skills. Rule precedence is Team Rules, then Project Rules,
