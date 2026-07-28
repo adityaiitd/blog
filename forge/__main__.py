@@ -22,6 +22,45 @@ from pathlib import Path
 HERE = Path(__file__).resolve().parent
 DATA = HERE / "data"
 
+#: Import name -> what to install, for a readable failure instead of a
+#: bare ModuleNotFoundError three frames deep.
+REQUIRED = {
+    "numpy": "numpy",
+    "scipy": "scipy",
+    "yaml": "pyyaml",
+}
+OPTIONAL = {
+    "fitz": ("pymupdf", "parsing datasheet PDFs"),
+    "matplotlib": ("matplotlib", "report figures"),
+    "websocket": ("websocket-client", "browser-driven price harvesting"),
+}
+
+
+def check_dependencies() -> int:
+    missing = [pkg for mod, pkg in REQUIRED.items() if not _importable(mod)]
+    if missing:
+        print("FORGE cannot start: missing required packages.\n")
+        print(f"    pip install {' '.join(missing)}\n")
+        print("Or install the project and all its dependencies at once:\n")
+        print("    pip install -e .\n")
+        return 1
+    absent = [
+        (pkg, why) for mod, (pkg, why) in OPTIONAL.items()
+        if not _importable(mod)
+    ]
+    for pkg, why in absent:
+        print(f"note: {pkg} is not installed, so {why} is unavailable")
+    return 0
+
+
+def _importable(module: str) -> bool:
+    import importlib.util
+
+    try:
+        return importlib.util.find_spec(module) is not None
+    except (ImportError, ValueError):
+        return False
+
 
 def _rule(title: str) -> None:
     print(f"\n\033[1m{title}\033[0m\n" + "-" * max(len(title), 40))
@@ -300,6 +339,8 @@ def main(argv: list[str] | None = None) -> int:
     p.set_defaults(func=cmd_all)
 
     args = parser.parse_args(argv)
+    if check_dependencies() != 0:
+        return 1
     return args.func(args)
 
 

@@ -13,37 +13,83 @@ is built.
 
 ## Getting to the app
 
-### 1. Standalone file, no setup
+### Option 1: one file, nothing to install
 
 Download **`build/forge-explorer.html`** from this branch and open it in any
-browser. It is one self-contained 7 MB file with 864 precomputed design points
+browser. One self-contained 7 MB file with 864 precomputed design points
 embedded. Sliders snap to the nearest computed point rather than moving
 continuously; everything else works, including all four modes.
 
-### 2. Run it locally, with live physics
+### Option 2: run it, with live physics
 
 ```bash
-git clone <this repo> && cd <repo>
+# 1. Get the code and switch to the branch
+git clone <this repo>
+cd <repo>
 git checkout cursor/forge-planar-transformer-design-agent-ca34
 
-python3 -m venv .venv && source .venv/bin/activate
-pip install numpy scipy matplotlib pymupdf pyyaml websocket-client
+# 2. Confirm you are in the right directory.
+#    You must see a folder called "forge" listed.
+ls forge
 
-python -m forge ui --open      # http://127.0.0.1:8765
+# 3. Create an isolated environment
+python3 -m venv .venv
+source .venv/bin/activate            # Windows: .venv\Scripts\activate
+
+# 4. Install the project and its dependencies
+pip install -e .
+
+# 5. Run it
+forge ui --open                      # http://127.0.0.1:8765
 ```
 
-Now every slider move re-runs the actual Python models. Only the browser-driven
-sourcing harvest needs Chrome; the explorer itself does not.
+Every slider move now re-runs the actual Python models. Only the price harvest
+needs Chrome; the explorer itself does not.
 
-### 3. Run the whole pipeline
+### If you see `No module named forge`
+
+Python is looking in the wrong place. Almost always one of three things:
+
+**You are not in the repository root.** `python -m forge` only works from the
+directory that *contains* the `forge` folder. Run `ls forge` first: if that
+errors, `cd` to the repository root and try again.
+
+**You have not installed it.** After `pip install -e .` the location stops
+mattering and both `forge` and `python -m forge` work from anywhere. This is
+the more robust route.
+
+**You installed into a different interpreter than you are running.** On macOS
+with Homebrew Python this is common. Check they agree:
 
 ```bash
-python -m forge all
+which python3 && which pip3
+python3 -c "import forge; print(forge.__file__)"
+```
+
+If the last command fails, install into that exact interpreter:
+
+```bash
+python3 -m pip install -e .
+```
+
+On recent macOS and Linux, a system Python may refuse with *externally managed
+environment*. Use the virtual environment in step 3 rather than
+`--break-system-packages`.
+
+### Option 3: run the whole pipeline
+
+```bash
+forge all
 ```
 
 Seven stages, about eight seconds: toolchain check, evidence register, catalog
 build, requirement validation, design screening, board generation with KiCad
 verification, and the cost model.
+
+Only `forge ui`, `forge export` and `forge all` are needed to see everything.
+`forge doctor` reports which optional tools you have; KiCad, Wine and FEMM are
+only required for board verification and field studies, and the tool degrades
+explicitly rather than silently when they are absent.
 
 ---
 
