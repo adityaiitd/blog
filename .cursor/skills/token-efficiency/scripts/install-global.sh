@@ -9,7 +9,7 @@
 #
 # Skills in ~/.cursor/skills are loaded in every project, so the skill half is fully
 # automatable. Cursor's User Rules are not stored on the filesystem, so the always-on
-# half needs one paste into Settings -> Rules -> User Rules; this script puts the text
+# half needs one paste into Customize -> Rules in the sidebar; this script puts the text
 # on your clipboard so that paste is all that is left. Use --repo for repositories
 # where you would rather commit the rule as a project rule.
 set -euo pipefail
@@ -101,12 +101,16 @@ fi
 echo
 if [[ -n "$copied" ]]; then
   echo "Rule text copied to your clipboard via $copied. One step left:"
-  echo "  Cursor Settings -> Rules -> User Rules -> paste -> save"
+  echo "  open Customize in the Cursor sidebar -> Rules -> paste -> save"
   echo "That scope applies to every repository on this machine."
 else
-  echo "Last step: paste the text below into Cursor Settings -> Rules -> User Rules,"
+  echo "Last step: paste the text below into Customize -> Rules in the Cursor sidebar,"
   echo "which applies to every repository on this machine."
   echo "(Reprint any time with: $dest/scripts/install-global.sh --print-rule)"
+fi
+echo
+echo "Then restart Cursor and confirm '$skill_name' appears under Customize -> Skills."
+if [[ -z "$copied" ]]; then
   echo
   echo "----------------------------------------------------------------------"
   rule_text

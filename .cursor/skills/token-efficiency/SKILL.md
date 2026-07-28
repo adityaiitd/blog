@@ -89,7 +89,7 @@ The two halves have different available scopes:
 | --- | --- | --- |
 | `~/.cursor/skills/` | This skill, every project on the machine | `scripts/install-global.sh` |
 | `.cursor/rules/*.mdc` with `alwaysApply: true` | One repository, shared with collaborators | Commit the rule; `install-global.sh --repo PATH` adds it elsewhere |
-| User Rules | Every repository on one machine | Paste once into Cursor Settings -> Rules -> User Rules. Not file-based, so it cannot be scripted; the installer puts the text on your clipboard. |
+| User Rules | Every repository on one machine | Paste once into Customize -> Rules in the sidebar. Not file-based, so it cannot be scripted; the installer puts the text on your clipboard. |
 | Team Rules | Every repository for a whole team | Cursor dashboard, team admins on Team/Enterprise plans. Plain text with no frontmatter; a Team Rule with no glob applies to every conversation. |
 
 Installer usage:
@@ -100,9 +100,11 @@ scripts/install-global.sh --repo ~/code/app      # also drop the .mdc into anoth
 scripts/install-global.sh --print-rule           # just print the User Rules text
 ```
 
-Rule precedence is Team Rules, then Project Rules, then User Rules, all merged. Note
-that skills are model-invoked and have no always-apply flag, which is why the always-on
-habits live in the rule and only the deeper material lives here.
+Skills are discovered when Cursor starts, so restart after installing one and confirm it
+appears under Customize -> Skills. Rule precedence is Team Rules, then Project Rules,
+then User Rules, all merged. Note that skills are model-invoked and have no always-apply
+flag, which is why the always-on habits live in the rule and only the deeper material
+lives here.
 
 ## Detailed references
 
