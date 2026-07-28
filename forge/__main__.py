@@ -237,6 +237,53 @@ def cmd_sourcing(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_report(args: argparse.Namespace) -> int:
+    from .data.catalog import Catalog
+    from .evidence.register import EvidenceRegister
+    from .report.build import write_report
+    from .requirements import build as build_requirements
+    from .solve.candidate import down_select
+    from .ui.server import sourcing_payload
+    from .verify.spice import analyse_faults, ngspice_available, simulate_sharing
+
+    _rule("candidate down-select and report")
+    register = EvidenceRegister(DATA / "evidence.sqlite")
+    lock = build_requirements(register=register)
+    lock.content_hash = lock.compute_hash()
+
+    circuit = None
+    if ngspice_available():
+        conductances = [1 / 50.0 * (1 + 0.10 * ((i % 3) - 1)) for i in range(8)]
+        sharing = simulate_sharing(800.0, 8, [10e-6] * 8, conductances, 120.0)
+        faults = analyse_faults(800.0, 8, 150.0)
+        circuit = {
+            "sharing": {"within_limit": sharing.within_limit,
+                        "detail": sharing.describe()},
+            "faults": {"all_within": all(f.within_rating for f in faults),
+                       "detail": "; ".join(
+                           f"{f.scenario}: {f.voltage_per_survivor:.0f} V"
+                           for f in faults)},
+            "summary": [sharing.describe()] + [
+                f"{f.scenario}: {f.voltage_per_survivor:.0f} V per surviving "
+                f"cell ({'within' if f.within_rating else 'OVER'} derating)"
+                for f in faults],
+        }
+
+    candidates = down_select(lock, Catalog(), top_n=args.top, circuit=circuit)
+    for candidate in candidates:
+        print(f"  #{candidate.rank} " + candidate.summary()[1])
+        print(f"      {candidate.summary()[2]}")
+    best = candidates[0]
+    print(f"\n  release level: {best.gates.level().value}")
+    reason = best.gates.refusal_reason()
+    if reason:
+        print(f"  blocked because {reason}")
+    path = write_report(best, Path(args.out), register,
+                        sourcing_payload(1000), circuit)
+    print(f"  report -> {path}")
+    return 0
+
+
 def cmd_ui(args: argparse.Namespace) -> int:
     from .ui.server import serve
 
@@ -266,6 +313,8 @@ def cmd_all(args: argparse.Namespace) -> int:
             out="build", core="ELP18/4/10withI18/2/10", material="3F46")),
         ("sourcing", cmd_sourcing, argparse.Namespace(
             volume=1000, refresh=args.refresh)),
+        ("report", cmd_report, argparse.Namespace(
+            out="build/design_report.md", top=3)),
     ]
     failures = []
     for name, fn, ns in steps:
@@ -323,6 +372,11 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--volume", type=int, default=1000)
     p.add_argument("--refresh", action="store_true", help="re-harvest live prices")
     p.set_defaults(func=cmd_sourcing)
+
+    p = sub.add_parser("report", help="down-select and write the design package")
+    p.add_argument("--out", default="build/design_report.md")
+    p.add_argument("--top", type=int, default=3)
+    p.set_defaults(func=cmd_report)
 
     p = sub.add_parser("ui", help="serve the interactive explorer")
     p.add_argument("--port", type=int, default=8765)

@@ -233,7 +233,9 @@ def assert_claim_allowed(text: str, report: GateReport,
     lowered = text.lower()
     if not hardware_passed:
         for word in FORBIDDEN_WITHOUT_HARDWARE:
-            for match in re.finditer(re.escape(word), lowered):
+            # Word boundaries matter: without them "proven" fires inside
+            # "provenance", which is a word this project uses constantly.
+            for match in re.finditer(rf"\b{re.escape(word)}\b", lowered):
                 if _is_negated(lowered, match.start()):
                     continue
                 raise ClaimError(
@@ -244,7 +246,7 @@ def assert_claim_allowed(text: str, report: GateReport,
                 )
 
     for phrase in ("production-qualified", "production qualified"):
-        for match in re.finditer(re.escape(phrase), lowered):
+        for match in re.finditer(rf"\b{re.escape(phrase)}\b", lowered):
             if _is_negated(lowered, match.start()):
                 continue
             raise ClaimError(

@@ -149,6 +149,13 @@ class ClaimTest(unittest.TestCase):
         ):
             assert_claim_allowed(phrase, self.report())
 
+    def test_substring_inside_a_longer_word_is_not_a_claim(self):
+        """'proven' fired inside 'provenance', a word used throughout."""
+        assert_claim_allowed(
+            "Full provenance is recorded for every value.", self.report())
+        assert_claim_allowed(
+            "See the provenance appendix.", self.report())
+
     def test_negation_does_not_hide_a_real_claim(self):
         with self.assertRaises(ClaimError):
             assert_claim_allowed(
