@@ -346,6 +346,21 @@ requirements:
       source of thermal uncertainty here, so the thermal model reports a
       surface over this range instead of one temperature.
 
+  - key: conv.heatsink_resistance
+    value: 3.0
+    unit: K/W
+    category: cooling_boundary
+    provenance: assumed
+    sensitivity: [1.5, 6.0]
+    rationale: >-
+      Thermal resistance from the transformer to ambient through the board,
+      any interface material and a heatsink or cold plate. Screening showed
+      this requirement was missing and that its absence alone decides
+      feasibility: the core footprint is only a few square centimetres, so
+      convection to air over that area cannot remove the loss on its own. EPC
+      publishes an 8 mm converter height but no thermal construction, so the
+      value is assumed and swept.
+
   - key: conv.t_max_core
     value: 100.0
     unit: degC

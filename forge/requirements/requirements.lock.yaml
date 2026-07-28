@@ -171,7 +171,7 @@ converter_brief:
   provenance_counts:
     sourced: 16
     derived: 5
-    assumed: 41
+    assumed: 42
   requirements:
   - key: conv.topology
     value: isop_8_cell_half_bridge_llc
@@ -493,6 +493,21 @@ converter_brief:
       uncertainty here, so the thermal model reports a surface over this range instead of one temperature.
     sensitivity:
     - 1.0
+    - 6.0
+    discrete: false
+  - key: conv.heatsink_resistance
+    value: 3.0
+    unit: K/W
+    scope: converter_brief
+    category: cooling_boundary
+    provenance: assumed
+    rationale: 'Thermal resistance from the transformer to ambient through the board, any interface material
+      and a heatsink or cold plate. Screening showed this requirement was missing and that its absence
+      alone decides feasibility: the core footprint is only a few square centimetres, so convection to
+      air over that area cannot remove the loss on its own. EPC publishes an 8 mm converter height but
+      no thermal construction, so the value is assumed and swept.'
+    sensitivity:
+    - 1.5
     - 6.0
     discrete: false
   - key: conv.t_max_core
@@ -892,4 +907,4 @@ validation:
   - '''diablo.downstream_converter_location'' cites ''ocp_diablo_400_v070'' whose status is ''blocked'';
     the value was read from an earlier retrieval and cannot be re-verified automatically until the manual
     gate is satisfied'
-content_hash: 55da7bb9c52cd80f164ee32defc44fbccdea48c8b1769d6489e46201f1296d1f
+content_hash: b2a12fe4c5867d6cfbb81796fce1be9e66ae1e14906f68068eeb5116b0fd04f6

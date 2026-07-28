@@ -24,6 +24,8 @@ class Core:
     le_mm: float
     ve_mm3: float
     height_mm: float
+    length_mm: Optional[float]
+    width_mm: Optional[float]
     window_h_mm: Optional[float]
     window_w_mm: Optional[float]
     mass_g: Optional[float]
@@ -103,7 +105,8 @@ class Catalog:
                 part=r["part"], family=r["family"], manufacturer=r["manufacturer"],
                 combination=r["combination"], ae_mm2=r["ae_mm2"],
                 amin_mm2=r["amin_mm2"], le_mm=r["le_mm"], ve_mm3=r["ve_mm3"],
-                height_mm=r["height_mm"], window_h_mm=r["window_h_mm"],
+                height_mm=r["height_mm"], length_mm=r["length_mm"],
+                width_mm=r["width_mm"], window_h_mm=r["window_h_mm"],
                 window_w_mm=r["window_w_mm"], mass_g=r["mass_g"],
                 source_key=r["source_key"], provenance=r["provenance"],
             )
