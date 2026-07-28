@@ -1,8 +1,3 @@
----
-description: Context and token discipline applied to every request - reduce re-billed context and turn count without reducing rigor.
-alwaysApply: true
----
-
 # Token discipline
 
 Every assistant turn re-sends the whole conversation as cached input, so cost scales

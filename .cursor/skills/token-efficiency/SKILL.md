@@ -81,11 +81,35 @@ for work you will need to re-derive.
 - Scope narrower rules with `globs` and skills with `paths` so they stay out of context
   for unrelated work.
 
+## Making this apply everywhere
+
+The two halves have different available scopes:
+
+| Scope | Covers | How |
+| --- | --- | --- |
+| `~/.cursor/skills/` | This skill, every project on the machine | `scripts/install-global.sh` |
+| `.cursor/rules/*.mdc` with `alwaysApply: true` | One repository, shared with collaborators | Commit the rule; `install-global.sh --repo PATH` adds it elsewhere |
+| User Rules | Every repository on one machine | Paste once into Cursor Settings -> Rules -> User Rules. Not file-based, so it cannot be scripted; the installer puts the text on your clipboard. |
+| Team Rules | Every repository for a whole team | Cursor dashboard, team admins on Team/Enterprise plans. Plain text with no frontmatter; a Team Rule with no glob applies to every conversation. |
+
+Installer usage:
+
+```bash
+scripts/install-global.sh                        # skill -> ~/.cursor/skills, rule -> clipboard
+scripts/install-global.sh --repo ~/code/app      # also drop the .mdc into another repo
+scripts/install-global.sh --print-rule           # just print the User Rules text
+```
+
+Rule precedence is Team Rules, then Project Rules, then User Rules, all merged. Note
+that skills are model-invoked and have no always-apply flag, which is why the always-on
+habits live in the rule and only the deeper material lives here.
+
 ## Detailed references
 
 - `references/cost-model.md` - the arithmetic behind a real bill, how to read
   input/output/cache-write/cache-read numbers, and how to estimate a thread's cost.
 - `references/auditing-a-thread.md` - how to find what is consuming a context window
   and what to change next time.
-- `scripts/install-global.sh` - copy this skill and rule to `~/.cursor` so they apply
-  in every repository, not just this one.
+- `assets/user-rule.md` - the rule body without frontmatter, ready to paste into User
+  Rules. Kept in sync with `.cursor/rules/token-efficiency.mdc`; the installer warns on
+  drift and can regenerate it with `--print-rule`.
