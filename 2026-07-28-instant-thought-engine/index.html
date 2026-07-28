@@ -1,0 +1,1129 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="An interactive strategic field guide to the Instant Thought Engine: market thesis, system architecture, defensibility, wedges, risks, and validation plan.">
+  <title>Instant Thought Engine — Strategic Field Guide</title>
+  <style>
+    :root {
+      --ink: #171714;
+      --muted: #67665f;
+      --paper: #f4f0e7;
+      --paper-2: #ebe5d8;
+      --card: rgba(255, 253, 247, .72);
+      --line: rgba(23, 23, 20, .16);
+      --orange: #ef5a32;
+      --blue: #315ca8;
+      --green: #1f795d;
+      --violet: #7450a6;
+      --yellow: #e7b82e;
+      --shadow: 0 18px 50px rgba(36, 29, 16, .10);
+      --serif: Georgia, "Times New Roman", serif;
+      --sans: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 85% 4%, rgba(239, 90, 50, .12), transparent 28rem),
+        radial-gradient(circle at 12% 34%, rgba(49, 92, 168, .08), transparent 30rem),
+        var(--paper);
+      font-family: var(--sans);
+      line-height: 1.5;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      opacity: .24;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.12'/%3E%3C/svg%3E");
+      z-index: 10;
+    }
+
+    a { color: inherit; }
+    button { font: inherit; }
+    :focus-visible { outline: 3px solid var(--blue); outline-offset: 3px; }
+
+    .progress {
+      position: fixed;
+      inset: 0 auto auto 0;
+      width: 0;
+      height: 4px;
+      background: var(--orange);
+      z-index: 100;
+    }
+
+    .shell {
+      display: grid;
+      grid-template-columns: 248px minmax(0, 1fr);
+      min-height: 100vh;
+    }
+
+    aside {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      padding: 30px 24px;
+      border-right: 1px solid var(--line);
+      background: rgba(244, 240, 231, .76);
+      backdrop-filter: blur(16px);
+      z-index: 20;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .mark {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 34px;
+      font-weight: 800;
+      letter-spacing: -.02em;
+    }
+
+    .mark-shape {
+      width: 28px;
+      height: 28px;
+      border-radius: 50% 50% 50% 8px;
+      background: var(--orange);
+      transform: rotate(-12deg);
+      box-shadow: inset -7px -7px 0 rgba(0, 0, 0, .08);
+    }
+
+    nav { display: grid; gap: 4px; }
+    nav a {
+      display: grid;
+      grid-template-columns: 26px 1fr;
+      align-items: center;
+      padding: 9px 10px;
+      border-radius: 8px;
+      color: var(--muted);
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 650;
+      transition: background .2s, color .2s;
+    }
+    nav a:hover, nav a.active { color: var(--ink); background: rgba(255, 255, 255, .65); }
+    nav span { font-family: var(--serif); color: var(--orange); font-style: italic; }
+
+    .aside-note {
+      margin-top: auto;
+      padding-top: 24px;
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.55;
+    }
+
+    main { min-width: 0; overflow: hidden; }
+    section {
+      position: relative;
+      max-width: 1160px;
+      margin: 0 auto;
+      padding: 110px 70px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .hero {
+      min-height: 100vh;
+      display: grid;
+      align-content: center;
+      padding-top: 70px;
+    }
+
+    .eyebrow {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 26px;
+      color: var(--orange);
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+    }
+    .eyebrow::before { content: ""; width: 34px; height: 2px; background: currentColor; }
+
+    h1, h2, h3, p { margin-top: 0; }
+    h1 {
+      max-width: 970px;
+      margin-bottom: 30px;
+      font-family: var(--serif);
+      font-size: clamp(62px, 8.5vw, 126px);
+      font-weight: 400;
+      letter-spacing: -.065em;
+      line-height: .85;
+    }
+    h1 em { color: var(--orange); font-weight: 400; }
+
+    .hero-deck {
+      max-width: 780px;
+      margin-bottom: 50px;
+      font-size: clamp(20px, 2vw, 28px);
+      line-height: 1.36;
+      letter-spacing: -.02em;
+    }
+
+    .thesis-strip {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      border: 1px solid var(--line);
+      background: var(--card);
+      box-shadow: var(--shadow);
+    }
+    .thesis-strip > div { padding: 22px; border-right: 1px solid var(--line); }
+    .thesis-strip > div:last-child { border: 0; }
+    .thesis-strip b { display: block; margin-bottom: 5px; font-size: 13px; text-transform: uppercase; letter-spacing: .08em; }
+    .thesis-strip p { margin: 0; color: var(--muted); font-size: 14px; }
+
+    .section-head {
+      display: grid;
+      grid-template-columns: 160px minmax(0, 760px);
+      gap: 30px;
+      margin-bottom: 60px;
+    }
+    .section-no { color: var(--orange); font: italic 24px var(--serif); }
+    h2 {
+      margin-bottom: 18px;
+      font: 400 clamp(40px, 5vw, 68px)/.98 var(--serif);
+      letter-spacing: -.045em;
+    }
+    .lede { color: var(--muted); font-size: 19px; line-height: 1.55; }
+
+    .callout {
+      margin: 44px 0;
+      padding: 34px 38px 34px 70px;
+      border-left: 5px solid var(--orange);
+      background: var(--ink);
+      color: var(--paper);
+      box-shadow: var(--shadow);
+      font: 400 clamp(26px, 3vw, 43px)/1.2 var(--serif);
+      letter-spacing: -.03em;
+    }
+    .callout small {
+      display: block;
+      margin-top: 14px;
+      color: #b7b4aa;
+      font: 12px var(--sans);
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+
+    .flow {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 12px;
+      margin: 35px 0 60px;
+    }
+    .flow-step {
+      position: relative;
+      min-height: 140px;
+      padding: 18px;
+      border: 1px solid var(--line);
+      background: var(--card);
+    }
+    .flow-step:not(:last-child)::after {
+      content: "→";
+      position: absolute;
+      top: 50%;
+      right: -20px;
+      z-index: 2;
+      width: 28px;
+      text-align: center;
+      color: var(--orange);
+      font-size: 23px;
+    }
+    .flow-step strong { display: block; margin-bottom: 26px; font: 400 22px var(--serif); }
+    .flow-step span { color: var(--muted); font-size: 12px; }
+    .flow-step.highlight { background: var(--orange); color: #fff; border-color: var(--orange); }
+    .flow-step.highlight span { color: rgba(255,255,255,.76); }
+
+    .grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 18px; }
+    .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+    .card {
+      position: relative;
+      padding: 28px;
+      border: 1px solid var(--line);
+      background: var(--card);
+      box-shadow: 0 8px 28px rgba(36, 29, 16, .05);
+    }
+    .card .tag {
+      display: inline-block;
+      margin-bottom: 22px;
+      padding: 5px 9px;
+      border-radius: 20px;
+      background: var(--paper-2);
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: .09em;
+      text-transform: uppercase;
+    }
+    .card h3 { margin-bottom: 11px; font: 400 27px/1.05 var(--serif); }
+    .card p { margin-bottom: 0; color: var(--muted); font-size: 14px; }
+    .card ul { padding-left: 18px; margin-bottom: 0; color: var(--muted); font-size: 14px; }
+
+    .misread { border-top: 4px solid var(--orange); }
+    .reframe { border-top: 4px solid var(--green); }
+
+    .stack {
+      display: grid;
+      grid-template-columns: 1fr 1.1fr 1fr;
+      gap: 0;
+      margin-top: 40px;
+      border: 1px solid var(--line);
+    }
+    .stack-col { padding: 28px; border-right: 1px solid var(--line); }
+    .stack-col:last-child { border: 0; }
+    .stack-col:nth-child(2) { background: var(--ink); color: var(--paper); }
+    .stack-col h3 { font: 400 25px var(--serif); }
+    .stack-col ol { margin: 20px 0 0; padding: 0; list-style: none; counter-reset: stack; }
+    .stack-col li {
+      counter-increment: stack;
+      display: flex;
+      gap: 12px;
+      padding: 10px 0;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 13px;
+    }
+    .stack-col:nth-child(2) li { color: #c5c1b8; border-color: rgba(255,255,255,.15); }
+    .stack-col li::before { content: "0" counter(stack); color: var(--orange); font: italic 13px var(--serif); }
+
+    .market-map {
+      position: relative;
+      min-height: 560px;
+      margin-top: 30px;
+      border: 1px solid var(--line);
+      background:
+        linear-gradient(to right, transparent calc(50% - .5px), var(--line) 50%, transparent calc(50% + .5px)),
+        linear-gradient(to bottom, transparent calc(50% - .5px), var(--line) 50%, transparent calc(50% + .5px)),
+        rgba(255,255,255,.35);
+    }
+    .axis { position: absolute; color: var(--muted); font-size: 10px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+    .axis.top { top: 14px; left: 50%; transform: translateX(-50%); }
+    .axis.bottom { bottom: 14px; left: 50%; transform: translateX(-50%); }
+    .axis.left { left: 12px; top: 50%; transform: translateY(-50%) rotate(-90deg); }
+    .axis.right { right: 8px; top: 50%; transform: translateY(-50%) rotate(90deg); }
+    .bubble {
+      position: absolute;
+      display: grid;
+      place-items: center;
+      width: var(--size);
+      height: var(--size);
+      border-radius: 50%;
+      color: #fff;
+      background: var(--tone);
+      font-size: 11px;
+      font-weight: 800;
+      text-align: center;
+      box-shadow: 0 8px 22px rgba(0,0,0,.15);
+      transition: transform .2s;
+    }
+    .bubble:hover { transform: scale(1.08); }
+
+    .graph-shell {
+      display: grid;
+      grid-template-columns: minmax(0, 1.55fr) minmax(260px, .7fr);
+      min-height: 580px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,.35);
+    }
+    .graph {
+      position: relative;
+      min-height: 580px;
+      overflow: hidden;
+      border-right: 1px solid var(--line);
+    }
+    .graph svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+    .graph line { stroke: rgba(23,23,20,.24); stroke-width: 1.5; stroke-dasharray: 5 6; }
+    .node {
+      position: absolute;
+      z-index: 2;
+      width: 112px;
+      min-height: 70px;
+      transform: translate(-50%, -50%);
+      padding: 12px 8px;
+      border: 1px solid var(--line);
+      border-radius: 50%;
+      background: var(--paper);
+      color: var(--ink);
+      cursor: pointer;
+      font-size: 11px;
+      font-weight: 750;
+      text-align: center;
+      box-shadow: 0 8px 20px rgba(36,29,16,.09);
+      transition: transform .2s, background .2s, color .2s;
+    }
+    .node:hover, .node.active { transform: translate(-50%, -50%) scale(1.08); background: var(--ink); color: var(--paper); }
+    .node.core { width: 138px; min-height: 92px; background: var(--orange); color: #fff; border-color: var(--orange); font: 400 19px var(--serif); }
+    .node.core:hover, .node.core.active { background: var(--orange); }
+    .graph-detail { padding: 34px 28px; display: flex; flex-direction: column; }
+    .graph-detail .kicker { color: var(--orange); font-size: 10px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; }
+    .graph-detail h3 { margin: 18px 0 14px; font: 400 31px/1 var(--serif); }
+    .graph-detail p { color: var(--muted); font-size: 14px; }
+    .graph-detail .question { margin-top: auto; padding-top: 18px; border-top: 1px solid var(--line); color: var(--ink); font-weight: 700; }
+
+    .layers { display: grid; gap: 10px; }
+    .layer {
+      display: grid;
+      grid-template-columns: 150px 1fr auto;
+      align-items: center;
+      gap: 20px;
+      padding: 22px;
+      border: 1px solid var(--line);
+      background: var(--card);
+    }
+    .layer b { font: 400 22px var(--serif); }
+    .layer p { margin: 0; color: var(--muted); font-size: 13px; }
+    .layer em { color: var(--orange); font-size: 10px; font-style: normal; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+
+    .failure-list { display: grid; gap: 1px; margin-top: 30px; background: var(--line); border: 1px solid var(--line); }
+    .failure {
+      display: grid;
+      grid-template-columns: 60px 180px 1fr 110px;
+      gap: 18px;
+      align-items: center;
+      padding: 20px;
+      background: var(--paper);
+    }
+    .failure .num { color: var(--orange); font: italic 24px var(--serif); }
+    .failure strong { font: 400 20px var(--serif); }
+    .failure p { margin: 0; color: var(--muted); font-size: 13px; }
+    .severity { justify-self: end; width: 88px; height: 7px; background: var(--paper-2); }
+    .severity i { display: block; height: 100%; width: var(--score); background: var(--orange); }
+
+    .moat {
+      display: grid;
+      grid-template-columns: 1fr 82px 1fr;
+      gap: 20px;
+      align-items: stretch;
+    }
+    .moat-side { padding: 30px; border: 1px solid var(--line); background: var(--card); }
+    .moat-side.strong { background: var(--ink); color: var(--paper); }
+    .moat-side h3 { font: 400 30px var(--serif); }
+    .moat-side ul { margin: 24px 0 0; padding: 0; list-style: none; }
+    .moat-side li { padding: 12px 0; border-top: 1px solid var(--line); color: var(--muted); font-size: 13px; }
+    .moat-side.strong li { color: #c6c2b7; border-color: rgba(255,255,255,.15); }
+    .moat-middle { display: grid; place-items: center; color: var(--orange); font: italic 26px var(--serif); }
+
+    .flywheel {
+      position: relative;
+      max-width: 720px;
+      min-height: 520px;
+      margin: 60px auto 0;
+    }
+    .flywheel-center {
+      position: absolute;
+      left: 50%; top: 50%;
+      display: grid; place-items: center;
+      width: 180px; height: 180px;
+      transform: translate(-50%, -50%);
+      border-radius: 50%;
+      background: var(--orange);
+      color: #fff;
+      text-align: center;
+      font: 400 25px/1.1 var(--serif);
+      box-shadow: var(--shadow);
+    }
+    .fly {
+      position: absolute;
+      width: 180px;
+      padding: 16px;
+      border: 1px solid var(--line);
+      background: var(--paper);
+      font-size: 12px;
+      text-align: center;
+      box-shadow: 0 8px 24px rgba(36,29,16,.08);
+    }
+    .fly b { display: block; margin-bottom: 4px; font: 400 18px var(--serif); }
+    .fly-1 { top: 0; left: 50%; transform: translateX(-50%); }
+    .fly-2 { top: 34%; right: 0; }
+    .fly-3 { bottom: 0; right: 15%; }
+    .fly-4 { bottom: 0; left: 15%; }
+    .fly-5 { top: 34%; left: 0; }
+
+    .wedge-tabs { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
+    .tab {
+      padding: 10px 14px;
+      border: 1px solid var(--line);
+      border-radius: 30px;
+      background: transparent;
+      cursor: pointer;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 750;
+    }
+    .tab.active { color: #fff; background: var(--ink); border-color: var(--ink); }
+    .wedge-panel {
+      display: none;
+      grid-template-columns: 1.2fr .8fr;
+      gap: 1px;
+      background: var(--line);
+      border: 1px solid var(--line);
+    }
+    .wedge-panel.active { display: grid; }
+    .wedge-panel > div { padding: 34px; background: var(--paper); }
+    .wedge-panel h3 { font: 400 36px/1.05 var(--serif); }
+    .wedge-panel p { color: var(--muted); }
+    .score-grid { display: grid; gap: 15px; }
+    .score-row { display: grid; grid-template-columns: 95px 1fr 28px; align-items: center; gap: 10px; font-size: 11px; }
+    .bar { height: 7px; background: var(--paper-2); }
+    .bar i { display: block; height: 100%; width: var(--score); background: var(--green); }
+
+    .ideal-flow { display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; margin-top: 40px; }
+    .ideal-flow div { position: relative; padding: 18px 12px; border-top: 3px solid var(--orange); background: var(--card); font-size: 12px; }
+    .ideal-flow b { display: block; margin-bottom: 8px; font: 400 18px var(--serif); }
+
+    .decision {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      margin: 40px 0;
+    }
+    .decision > div { padding: 30px; border: 1px solid var(--line); }
+    .decision h3 { font: 400 28px var(--serif); }
+    .decision ul { padding-left: 18px; color: var(--muted); font-size: 14px; }
+    .decision .go { border-top: 5px solid var(--green); }
+    .decision .stop { border-top: 5px solid var(--orange); }
+
+    .experiments { counter-reset: experiment; display: grid; gap: 12px; }
+    .experiment {
+      counter-increment: experiment;
+      display: grid;
+      grid-template-columns: 62px 1fr 1fr;
+      gap: 22px;
+      padding: 26px;
+      border: 1px solid var(--line);
+      background: var(--card);
+    }
+    .experiment::before { content: "0" counter(experiment); color: var(--orange); font: italic 26px var(--serif); }
+    .experiment h3 { font: 400 23px var(--serif); }
+    .experiment p { margin: 0; color: var(--muted); font-size: 13px; }
+    .metric { padding-left: 18px; border-left: 1px solid var(--line); }
+    .metric b { display: block; margin-bottom: 6px; color: var(--green); font-size: 10px; letter-spacing: .09em; text-transform: uppercase; }
+
+    .roadmap { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0; margin-top: 30px; border: 1px solid var(--line); }
+    .phase { padding: 28px 22px; border-right: 1px solid var(--line); }
+    .phase:last-child { border: 0; }
+    .phase span { color: var(--orange); font: italic 17px var(--serif); }
+    .phase h3 { margin: 13px 0; font: 400 25px/1 var(--serif); }
+    .phase p { color: var(--muted); font-size: 13px; }
+    .phase small { display: block; padding-top: 12px; border-top: 1px solid var(--line); color: var(--ink); font-weight: 700; }
+
+    .principles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--line); border: 1px solid var(--line); }
+    .principle { padding: 28px; background: var(--paper); }
+    .principle b { display: block; margin-bottom: 9px; font: 400 22px var(--serif); }
+    .principle p { margin: 0; color: var(--muted); font-size: 13px; }
+
+    .final {
+      min-height: 85vh;
+      display: grid;
+      align-content: center;
+      border-bottom: 0;
+    }
+    .final h2 { max-width: 900px; font-size: clamp(48px, 7vw, 92px); }
+    .final h2 em { color: var(--orange); font-weight: 400; }
+    .final p { max-width: 700px; color: var(--muted); font-size: 19px; }
+
+    .sources { columns: 2; column-gap: 30px; }
+    .source {
+      break-inside: avoid;
+      display: grid;
+      grid-template-columns: 24px 1fr;
+      gap: 8px;
+      padding: 12px 0;
+      border-top: 1px solid var(--line);
+      font-size: 12px;
+    }
+    .source span { color: var(--orange); font: italic 13px var(--serif); }
+    .source a { color: var(--muted); text-underline-offset: 3px; }
+    .source a:hover { color: var(--ink); }
+    .source-note { margin-top: 26px; color: var(--muted); font-size: 11px; }
+
+    .mobile-nav { display: none; }
+
+    @media (max-width: 950px) {
+      .shell { display: block; }
+      aside { display: none; }
+      .mobile-nav {
+        position: fixed;
+        inset: 14px 14px auto auto;
+        z-index: 50;
+        display: block;
+        padding: 11px 14px;
+        border: 1px solid var(--line);
+        border-radius: 30px;
+        background: rgba(244,240,231,.9);
+        backdrop-filter: blur(12px);
+        color: var(--ink);
+        text-decoration: none;
+        font-size: 11px;
+        font-weight: 800;
+      }
+      section { padding: 85px 34px; }
+      .flow { grid-template-columns: 1fr; }
+      .flow-step { min-height: 100px; }
+      .flow-step:not(:last-child)::after { content: "↓"; top: auto; bottom: -23px; right: 50%; }
+      .graph-shell { grid-template-columns: 1fr; }
+      .graph { border-right: 0; border-bottom: 1px solid var(--line); }
+      .market-map { min-height: 500px; }
+      .roadmap { grid-template-columns: 1fr 1fr; }
+      .phase:nth-child(2) { border-right: 0; }
+      .phase:nth-child(-n+2) { border-bottom: 1px solid var(--line); }
+      .ideal-flow { grid-template-columns: repeat(3, 1fr); }
+    }
+
+    @media (max-width: 650px) {
+      section { padding: 72px 20px; }
+      .hero { min-height: auto; padding-top: 105px; }
+      h1 { font-size: 60px; }
+      .thesis-strip, .grid-2, .grid-3, .stack, .wedge-panel.active,
+      .decision, .principles { grid-template-columns: 1fr; }
+      .thesis-strip > div, .stack-col { border-right: 0; border-bottom: 1px solid var(--line); }
+      .section-head { grid-template-columns: 1fr; gap: 10px; }
+      .callout { padding: 28px; }
+      .market-map { min-height: 570px; }
+      .bubble { transform: translate(-50%, -50%); }
+      .bubble:hover { transform: translate(-50%, -50%) scale(1.06); }
+      .graph { min-height: 650px; }
+      .layer { grid-template-columns: 1fr; gap: 8px; }
+      .failure { grid-template-columns: 40px 1fr; }
+      .failure p, .severity { grid-column: 2; justify-self: stretch; }
+      .moat { grid-template-columns: 1fr; }
+      .moat-middle { min-height: 50px; }
+      .flywheel { display: grid; gap: 8px; min-height: auto; }
+      .flywheel-center, .fly { position: static; width: auto; height: auto; transform: none; }
+      .flywheel-center { min-height: 120px; border-radius: 100px; }
+      .ideal-flow, .roadmap { grid-template-columns: 1fr; }
+      .phase { border-right: 0; border-bottom: 1px solid var(--line); }
+      .experiment { grid-template-columns: 42px 1fr; }
+      .metric { grid-column: 2; padding: 15px 0 0; border-left: 0; border-top: 1px solid var(--line); }
+      .sources { columns: 1; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      *, *::before, *::after { transition-duration: .01ms !important; animation-duration: .01ms !important; }
+    }
+  </style>
+</head>
+<body>
+  <div class="progress" aria-hidden="true"></div>
+  <a class="mobile-nav" href="#thesis">Explore ↓</a>
+  <div class="shell">
+    <aside>
+      <div class="mark"><span class="mark-shape" aria-hidden="true"></span> Thought Engine</div>
+      <nav aria-label="Field guide">
+        <a href="#thesis"><span>01</span>The thesis</a>
+        <a href="#reframe"><span>02</span>The reframe</a>
+        <a href="#landscape"><span>03</span>Market reality</a>
+        <a href="#system"><span>04</span>The system</a>
+        <a href="#hard"><span>05</span>What is hard</a>
+        <a href="#moat"><span>06</span>The moat</a>
+        <a href="#wedge"><span>07</span>Where to start</a>
+        <a href="#validate"><span>08</span>Validation</a>
+        <a href="#build"><span>09</span>Build sequence</a>
+        <a href="#sources"><span>10</span>Evidence</a>
+      </nav>
+      <p class="aside-note">A strategic field guide.<br>Market snapshot: July 2026.<br>Use the navigation or scroll.</p>
+    </aside>
+
+    <main>
+      <section class="hero" id="thesis">
+        <div class="eyebrow">A founder's field guide · July 2026</div>
+        <h1>From thought<br>to <em>finished.</em></h1>
+        <p class="hero-deck">The opportunity is not another video generator. It is a system that compresses the distance between an idea in someone's head and a trusted artifact they can understand, ship, or sell.</p>
+        <div class="thesis-strip">
+          <div><b>The primitive</b><p>Models generate fragments. Products finish jobs.</p></div>
+          <div><b>The control point</b><p>Intent → orchestration → evaluation → correction.</p></div>
+          <div><b>The wedge</b><p>One repeated outcome where continuity and trust matter.</p></div>
+        </div>
+      </section>
+
+      <section id="reframe">
+        <div class="section-head">
+          <div class="section-no">02 / Reframe</div>
+          <div>
+            <h2>Zoom out one level.</h2>
+            <p class="lede">Voice, video, CAD, code, simulation, and research are not separate destinations. They are specialized transformations inside a larger creation loop.</p>
+          </div>
+        </div>
+
+        <div class="grid-2">
+          <article class="card misread">
+            <span class="tag">The obvious reading</span>
+            <h3>“Build a better AI video app.”</h3>
+            <p>Compete on model access, output quality, prompt UX, and price. This is visible, exciting—and increasingly easy to copy.</p>
+          </article>
+          <article class="card reframe">
+            <span class="tag">The deeper reading</span>
+            <h3>“Build an intent compiler.”</h3>
+            <p>Translate a vague goal into coordinated research, decisions, media, verification, revisions, and a finished outcome.</p>
+          </article>
+        </div>
+
+        <blockquote class="callout">
+          The scarce resource is no longer first-draft generation. It is reliable convergence on “done.”
+          <small>Strategic synthesis</small>
+        </blockquote>
+
+        <div class="flow" aria-label="Evolution from thought to outcome">
+          <div class="flow-step"><strong>Thought</strong><span>Ambiguous intent, context, taste</span></div>
+          <div class="flow-step"><strong>Plan</strong><span>Decomposition, constraints, evidence</span></div>
+          <div class="flow-step"><strong>Create</strong><span>Specialist models and tools</span></div>
+          <div class="flow-step"><strong>Judge</strong><span>Quality, truth, identity, rights</span></div>
+          <div class="flow-step highlight"><strong>Outcome</strong><span>Editable, approved, published</span></div>
+        </div>
+
+        <div class="stack">
+          <div class="stack-col">
+            <h3>Models<br><small>Commoditizing</small></h3>
+            <ol>
+              <li>Text, voice, image, video</li>
+              <li>CAD, simulation, code</li>
+              <li>Specialized evaluators</li>
+            </ol>
+          </div>
+          <div class="stack-col">
+            <h3>Creation graph<br><small>The control layer</small></h3>
+            <ol>
+              <li>Intent and context model</li>
+              <li>Planning and routing</li>
+              <li>Persistent state and local edits</li>
+              <li>Evaluation and recovery</li>
+            </ol>
+          </div>
+          <div class="stack-col">
+            <h3>Workflow<br><small>Where value lands</small></h3>
+            <ol>
+              <li>Identity, brand, permissions</li>
+              <li>Approvals and collaboration</li>
+              <li>Publishing and outcomes</li>
+            </ol>
+          </div>
+        </div>
+      </section>
+
+      <section id="landscape">
+        <div class="section-head">
+          <div class="section-no">03 / Reality</div>
+          <div>
+            <h2>The category already exists.</h2>
+            <p class="lede">“One idea → many coordinated media outputs” is now the direction of major creative suites and well-funded startups. A generic universal canvas is not an empty market.</p>
+          </div>
+        </div>
+
+        <div class="market-map" role="img" aria-label="Competitor map comparing workflow depth and breadth">
+          <span class="axis top">Multi-modal breadth ↑</span>
+          <span class="axis bottom">Single modality ↓</span>
+          <span class="axis left">Tool</span>
+          <span class="axis right">Outcome system</span>
+          <span class="bubble" style="--size:92px;--tone:#315ca8;left:70%;top:20%">Canva AI</span>
+          <span class="bubble" style="--size:82px;--tone:#7450a6;left:62%;top:34%">Adobe<br>Firefly</span>
+          <span class="bubble" style="--size:73px;--tone:#ef5a32;left:48%;top:24%">FLORA</span>
+          <span class="bubble" style="--size:69px;--tone:#171714;left:42%;top:39%">Figma<br>Weave</span>
+          <span class="bubble" style="--size:66px;--tone:#1f795d;left:58%;top:53%">Runway<br>Workflows</span>
+          <span class="bubble" style="--size:60px;--tone:#1f795d;left:32%;top:57%">Freepik<br>Spaces</span>
+          <span class="bubble" style="--size:64px;--tone:#ef5a32;left:70%;top:66%">Higgsfield</span>
+          <span class="bubble" style="--size:57px;--tone:#67665f;left:22%;top:73%">ComfyUI</span>
+          <span class="bubble" style="--size:52px;--tone:#315ca8;left:45%;top:78%">fal</span>
+          <span class="bubble" style="--size:56px;--tone:#7450a6;left:80%;top:81%">HeyGen</span>
+        </div>
+
+        <div class="grid-3" style="margin-top:18px">
+          <article class="card"><span class="tag">Incumbent edge</span><h3>Editability</h3><p>Adobe, Figma, and Canva own layered formats, familiar tools, and existing distribution—not just generation.</p></article>
+          <article class="card"><span class="tag">Startup edge</span><h3>Workflow focus</h3><p>FLORA, Runway, and Higgsfield move faster around model routing, identity, reusable graphs, and emerging media behavior.</p></article>
+          <article class="card"><span class="tag">Infrastructure edge</span><h3>Abstraction</h3><p>fal and open workflow ecosystems make “support many models” infrastructure, not a durable product claim.</p></article>
+        </div>
+
+        <blockquote class="callout">
+          Do not enter as a universal graph. Enter as the best way to finish one valuable job—then let the graph emerge underneath.
+          <small>Category conclusion</small>
+        </blockquote>
+      </section>
+
+      <section id="system">
+        <div class="section-head">
+          <div class="section-no">04 / System</div>
+          <div>
+            <h2>A factory, not a chatbot.</h2>
+            <p class="lede">The product is a stateful production system. Each specialist contributes to a shared artifact graph; every claim and asset retains its lineage. Select a node to inspect its real job.</p>
+          </div>
+        </div>
+
+        <div class="graph-shell">
+          <div class="graph" id="graph">
+            <svg aria-hidden="true" viewBox="0 0 700 580" preserveAspectRatio="none">
+              <line x1="350" y1="290" x2="110" y2="90"/><line x1="350" y1="290" x2="290" y2="75"/>
+              <line x1="350" y1="290" x2="505" y2="92"/><line x1="350" y1="290" x2="620" y2="195"/>
+              <line x1="350" y1="290" x2="600" y2="390"/><line x1="350" y1="290" x2="475" y2="500"/>
+              <line x1="350" y1="290" x2="250" y2="500"/><line x1="350" y1="290" x2="90" y2="385"/>
+              <line x1="110" y1="90" x2="290" y2="75"/><line x1="505" y1="92" x2="620" y2="195"/>
+              <line x1="600" y1="390" x2="475" y2="500"/><line x1="250" y1="500" x2="90" y2="385"/>
+            </svg>
+            <button class="node core active" style="left:50%;top:50%" data-node="orchestrator">Creation<br>Graph</button>
+            <button class="node" style="left:16%;top:15%" data-node="intent">Intent model</button>
+            <button class="node" style="left:41%;top:13%" data-node="research">Research + evidence</button>
+            <button class="node" style="left:72%;top:16%" data-node="world">World + memory</button>
+            <button class="node" style="left:89%;top:34%" data-node="specialists">Specialist models</button>
+            <button class="node" style="left:86%;top:67%" data-node="evaluation">Evaluation</button>
+            <button class="node" style="left:68%;top:86%" data-node="editor">Local editor</button>
+            <button class="node" style="left:36%;top:86%" data-node="rights">Rights + provenance</button>
+            <button class="node" style="left:13%;top:66%" data-node="outcomes">Outcome feedback</button>
+          </div>
+          <div class="graph-detail" aria-live="polite">
+            <span class="kicker">Selected component</span>
+            <h3 id="node-title">Creation Graph</h3>
+            <p id="node-copy">A typed, versioned map of goals, claims, assets, dependencies, approvals, and outputs. It makes each artifact inspectable and each change local.</p>
+            <p class="question" id="node-question">Core test: Can one corrected fact update every dependent output without rebuilding everything?</p>
+          </div>
+        </div>
+
+        <div class="layers" style="margin-top:40px">
+          <div class="layer"><b>Experience</b><p>Conversational direction, structured review, local edits, approvals, publishing.</p><em>User sees this</em></div>
+          <div class="layer"><b>Control plane</b><p>Plans, budgets, routes, retries, model policies, evaluators, state transitions.</p><em>Value concentrates</em></div>
+          <div class="layer"><b>Artifact graph</b><p>Claims, sources, scenes, identities, assets, versions, lineage, permissions.</p><em>Memory lives here</em></div>
+          <div class="layer"><b>Model layer</b><p>Replaceable text, voice, image, video, code, CAD, retrieval, and simulation engines.</p><em>Commoditizes</em></div>
+        </div>
+      </section>
+
+      <section id="hard">
+        <div class="section-head">
+          <div class="section-no">05 / Hard parts</div>
+          <div>
+            <h2>Generation is only one failure surface.</h2>
+            <p class="lede">The hardest problems live between models: incompatible representations, compounding errors, subjective evaluation, rights, and the inability to make a precise change.</p>
+          </div>
+        </div>
+
+        <div class="failure-list">
+          <div class="failure"><span class="num">01</span><strong>Continuity</strong><p>Face, voice, wardrobe, geometry, lighting, and narrative state drift across tools and time.</p><span class="severity" title="Very high"><i style="--score:95%"></i></span></div>
+          <div class="failure"><span class="num">02</span><strong>Error compounding</strong><p>A weak premise or bad keyframe silently contaminates every dependent artifact.</p><span class="severity" title="Very high"><i style="--score:92%"></i></span></div>
+          <div class="failure"><span class="num">03</span><strong>Evaluation</strong><p>“Good,” “on-brand,” and “sounds like me” are contextual. Generic scores miss uncanny failures.</p><span class="severity" title="Very high"><i style="--score:90%"></i></span></div>
+          <div class="failure"><span class="num">04</span><strong>Local editing</strong><p>Changing one claim, gesture, object, or pronunciation often triggers destructive regeneration.</p><span class="severity" title="High"><i style="--score:88%"></i></span></div>
+          <div class="failure"><span class="num">05</span><strong>Economics</strong><p>Branching video workflows multiply compute, rejection, review, and latency—not just API cost.</p><span class="severity" title="High"><i style="--score:80%"></i></span></div>
+          <div class="failure"><span class="num">06</span><strong>Rights + trust</strong><p>Likeness consent, voice ownership, source provenance, deletion, and disclosure must travel with assets.</p><span class="severity" title="Very high"><i style="--score:94%"></i></span></div>
+        </div>
+
+        <div class="grid-2" style="margin-top:40px">
+          <article class="card">
+            <span class="tag">Fish Audio lesson</span>
+            <h3>“Solved” modalities still fragment.</h3>
+            <p>Fish S2 demonstrates why specialist models persist: expressive natural-language control, multilingual cloning, multi-speaker generation, and fast streaming can matter more than generic realism. But its ≈100 ms first-audio figure is an optimized H200 serving result—not end-to-end product latency—and commercial use of released weights requires separate terms.</p>
+          </article>
+          <article class="card">
+            <span class="tag">Identity lesson</span>
+            <h3>Consistency is a frontier, not a percentage.</h3>
+            <p>Recognizable identity is practical in controlled settings. Deterministic identity across pose, age, expression, style, and motion is not. Similarity also trades off against editability: copying the reference more tightly can preserve identity while constraining expression and pose.</p>
+          </article>
+        </div>
+      </section>
+
+      <section id="moat">
+        <div class="section-head">
+          <div class="section-no">06 / Defensibility</div>
+          <div>
+            <h2>Own the learning loop.</h2>
+            <p class="lede">Model breadth and clever routing decay as advantages. Durable value accumulates when the system learns what a specific person or organization accepts—and connects that preference to real outcomes.</p>
+          </div>
+        </div>
+
+        <div class="moat">
+          <div class="moat-side">
+            <h3>Looks like a moat</h3>
+            <ul>
+              <li>Supporting the most model providers</li>
+              <li>A beautiful node-based canvas</li>
+              <li>A library of prompt templates</li>
+              <li>Automatic “best model” selection</li>
+              <li>Generic memory of chat history</li>
+            </ul>
+          </div>
+          <div class="moat-middle">vs.</div>
+          <div class="moat-side strong">
+            <h3>Compounds like a moat</h3>
+            <ul>
+              <li>Consented identity + brand vault</li>
+              <li>Approval, edit, rejection, and publish data</li>
+              <li>Vertical quality and safety evaluators</li>
+              <li>Outcome-linked routing and recommendations</li>
+              <li>Embedded approvals, DAM, compliance, publishing</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="flywheel" aria-label="Data and workflow defensibility flywheel">
+          <div class="flywheel-center">A trusted<br>creation loop</div>
+          <div class="fly fly-1"><b>Better context</b>Identity, brand, audience, rights</div>
+          <div class="fly fly-2"><b>Better first drafts</b>Fewer irrelevant branches</div>
+          <div class="fly fly-3"><b>More shipping</b>Artifacts reach real channels</div>
+          <div class="fly fly-4"><b>Outcome signals</b>Approval, edits, retention, conversion</div>
+          <div class="fly fly-5"><b>Better judgment</b>Personal evaluators learn taste</div>
+        </div>
+      </section>
+
+      <section id="wedge">
+        <div class="section-head">
+          <div class="section-no">07 / Wedge</div>
+          <div>
+            <h2>Start narrow enough to win.</h2>
+            <p class="lede">The best entry point has frequent production, expensive coordination, measurable output, reusable context, and a reason to trust one system with identity and brand.</p>
+          </div>
+        </div>
+
+        <div class="wedge-tabs" role="tablist" aria-label="Potential market wedges">
+          <button class="tab active" role="tab" aria-selected="true" data-tab="creator">Creator / executive localization</button>
+          <button class="tab" role="tab" aria-selected="false" data-tab="regulated">Regulated brand localization</button>
+          <button class="tab" role="tab" aria-selected="false" data-tab="ads">Product-to-ad engine</button>
+          <button class="tab" role="tab" aria-selected="false" data-tab="education">Personalized education</button>
+          <button class="tab" role="tab" aria-selected="false" data-tab="universal">Universal consumer engine</button>
+        </div>
+
+        <div class="wedge-panel active" data-panel="creator">
+          <div><span class="tag">Recommended entry</span><h3>One approved recording → a week of localized, channel-ready content.</h3><p>For founder-led companies, creators, and executives. Preserve voice, likeness, claims, style, and provenance while producing short video, audio, captions, clips, and language variants.</p></div>
+          <div class="score-grid">
+            <div class="score-row"><span>Frequency</span><span class="bar"><i style="--score:90%"></i></span><b>9</b></div>
+            <div class="score-row"><span>Clear ROI</span><span class="bar"><i style="--score:80%"></i></span><b>8</b></div>
+            <div class="score-row"><span>Moat potential</span><span class="bar"><i style="--score:80%"></i></span><b>8</b></div>
+            <div class="score-row"><span>Buildability</span><span class="bar"><i style="--score:80%"></i></span><b>8</b></div>
+            <div class="score-row"><span>Competition</span><span class="bar"><i style="--score:60%"></i></span><b>6</b></div>
+          </div>
+        </div>
+        <div class="wedge-panel" data-panel="regulated">
+          <div><span class="tag">High-value expansion</span><h3>Governed campaign adaptation across markets.</h3><p>Localize regulated or tightly controlled brand campaigns while enforcing claims, disclaimers, identity permissions, legal review, and auditable provenance.</p></div>
+          <div class="score-grid">
+            <div class="score-row"><span>Frequency</span><span class="bar"><i style="--score:70%"></i></span><b>7</b></div>
+            <div class="score-row"><span>Clear ROI</span><span class="bar"><i style="--score:90%"></i></span><b>9</b></div>
+            <div class="score-row"><span>Moat potential</span><span class="bar"><i style="--score:90%"></i></span><b>9</b></div>
+            <div class="score-row"><span>Buildability</span><span class="bar"><i style="--score:40%"></i></span><b>4</b></div>
+            <div class="score-row"><span>Competition</span><span class="bar"><i style="--score:50%"></i></span><b>5</b></div>
+          </div>
+        </div>
+        <div class="wedge-panel" data-panel="ads">
+          <div><span class="tag">ROI-rich, crowded</span><h3>Catalog + brand kit → campaign variants.</h3><p>Generate and test product ads across audiences and channels. Outcome data is powerful, but Canva, Adobe, Runway, Higgsfield, and commerce platforms are already converging here.</p></div>
+          <div class="score-grid">
+            <div class="score-row"><span>Frequency</span><span class="bar"><i style="--score:90%"></i></span><b>9</b></div>
+            <div class="score-row"><span>Clear ROI</span><span class="bar"><i style="--score:100%"></i></span><b>10</b></div>
+            <div class="score-row"><span>Moat potential</span><span class="bar"><i style="--score:70%"></i></span><b>7</b></div>
+            <div class="score-row"><span>Buildability</span><span class="bar"><i style="--score:70%"></i></span><b>7</b></div>
+            <div class="score-row"><span>Competition</span><span class="bar"><i style="--score:20%"></i></span><b>2</b></div>
+          </div>
+        </div>
+        <div class="wedge-panel" data-panel="education">
+          <div><span class="tag">Vision-aligned</span><h3>Source material → adaptive explanation.</h3><p>Transform expert material into narrated diagrams, lessons, quizzes, and conversational follow-ups matched to the learner. Strong experience fit; weaker urgency and willingness to pay.</p></div>
+          <div class="score-grid">
+            <div class="score-row"><span>Frequency</span><span class="bar"><i style="--score:70%"></i></span><b>7</b></div>
+            <div class="score-row"><span>Clear ROI</span><span class="bar"><i style="--score:50%"></i></span><b>5</b></div>
+            <div class="score-row"><span>Moat potential</span><span class="bar"><i style="--score:70%"></i></span><b>7</b></div>
+            <div class="score-row"><span>Buildability</span><span class="bar"><i style="--score:80%"></i></span><b>8</b></div>
+            <div class="score-row"><span>Competition</span><span class="bar"><i style="--score:50%"></i></span><b>5</b></div>
+          </div>
+        </div>
+        <div class="wedge-panel" data-panel="universal">
+          <div><span class="tag">Long-term vision, poor entry</span><h3>Any thought → any personalized artifact.</h3><p>Emotionally compelling, but quality criteria are ambiguous, compute is unbounded, repeat behavior is unclear, and every creative incumbent can claim the same destination.</p></div>
+          <div class="score-grid">
+            <div class="score-row"><span>Frequency</span><span class="bar"><i style="--score:50%"></i></span><b>5</b></div>
+            <div class="score-row"><span>Clear ROI</span><span class="bar"><i style="--score:20%"></i></span><b>2</b></div>
+            <div class="score-row"><span>Moat potential</span><span class="bar"><i style="--score:40%"></i></span><b>4</b></div>
+            <div class="score-row"><span>Buildability</span><span class="bar"><i style="--score:10%"></i></span><b>1</b></div>
+            <div class="score-row"><span>Competition</span><span class="bar"><i style="--score:10%"></i></span><b>1</b></div>
+          </div>
+        </div>
+
+        <div class="ideal-flow">
+          <div><b>Ingest</b>Approved source + identity</div>
+          <div><b>Extract</b>Claims, moments, audience</div>
+          <div><b>Design</b>Channel + language variants</div>
+          <div><b>Generate</b>Voice, likeness, visuals</div>
+          <div><b>Review</b>Local edits + approvals</div>
+          <div><b>Publish</b>Track real outcomes</div>
+        </div>
+      </section>
+
+      <section id="validate">
+        <div class="section-head">
+          <div class="section-no">08 / Validate</div>
+          <div>
+            <h2>Test repeat value, not demo magic.</h2>
+            <p class="lede">A breathtaking first generation is weak evidence. The product is validated when customers repeatedly publish, correct outputs locally, trust the system with identity, and retain healthy unit economics.</p>
+          </div>
+        </div>
+
+        <div class="experiments">
+          <article class="experiment"><div><h3>Paid concierge</h3><p>Manually deliver recurring content packages to 15–20 creators or founder-led companies. Ask for payment after the first package.</p></div><div class="metric"><b>Pass condition</b><p>At least 40% continue paying and publishing after four delivery cycles.</p></div></article>
+          <article class="experiment"><div><h3>Stack baseline</h3><p>Compare against the customer's current ChatGPT + Canva + voice/video workflow, including human coordination time.</p></div><div class="metric"><b>Pass condition</b><p>≥50% less hands-on time and ≥60% blind preference for the finished package.</p></div></article>
+          <article class="experiment"><div><h3>Identity stress test</h3><p>Test 25 consented identities across difficult poses, expressions, lighting, motion, languages, and editing requests.</p></div><div class="metric"><b>Pass condition</b><p>Report recognition, similarity, editability, and rejection separately—never one marketing percentage.</p></div></article>
+          <article class="experiment"><div><h3>Local correction</h3><p>Change one fact, visual object, pronunciation, clip, or disclosure while preserving all unaffected work.</p></div><div class="metric"><b>Pass condition</b><p>≥80% of targeted edits succeed without collateral regeneration.</p></div></article>
+          <article class="experiment"><div><h3>Router ablation</h3><p>Compare a fixed best model, cheapest model, and adaptive router using the same acceptance criteria.</p></div><div class="metric"><b>Pass condition</b><p>Better acceptance at equal cost, or ≥25% lower cost at equal acceptance.</p></div></article>
+          <article class="experiment"><div><h3>True unit economics</h3><p>Include rejected generations, retries, queues, support, human review, storage, and delivery—not only model calls.</p></div><div class="metric"><b>Pass condition</b><p>Predictable deliverable cost and a credible path beyond 65% gross margin.</p></div></article>
+        </div>
+
+        <div class="decision">
+          <div class="go"><h3>Evidence to continue</h3><ul><li>Customers ship every week, not merely generate</li><li>Context improves first-pass acceptance over time</li><li>Local edits work and reduce rework</li><li>Identity controls increase—not suppress—trust</li><li>Outcome data changes what the system recommends</li></ul></div>
+          <div class="stop"><h3>Evidence to reconsider</h3><ul><li>Usage collapses after novelty wears off</li><li>Customers prefer assembling incumbent tools</li><li>Human review remains unbounded</li><li>Model switching provides no measurable gain</li><li>Acquisition costs exceed recurring workflow value</li></ul></div>
+        </div>
+      </section>
+
+      <section id="build">
+        <div class="section-head">
+          <div class="section-no">09 / Sequence</div>
+          <div>
+            <h2>Earn the universal vision.</h2>
+            <p class="lede">Build only the orchestration needed to remove the next bottleneck in a real workflow. Generalize after repeated customer behavior reveals the stable primitives.</p>
+          </div>
+        </div>
+
+        <div class="roadmap">
+          <article class="phase"><span>Stage 01</span><h3>Concierge truth</h3><p>Deliver the outcome manually with best-of-breed tools. Capture every revision, approval, rejection, cost, and publish event.</p><small>Learn the real job</small></article>
+          <article class="phase"><span>Stage 02</span><h3>Artifact spine</h3><p>Model sources, claims, identity permissions, assets, variants, and approvals. Make local changes propagate safely.</p><small>Own state + lineage</small></article>
+          <article class="phase"><span>Stage 03</span><h3>Quality engine</h3><p>Automate vertical checks, routing, retries, and escalation. Train on accepted, edited, rejected, and published work.</p><small>Own judgment</small></article>
+          <article class="phase"><span>Stage 04</span><h3>Adjacent jobs</h3><p>Expand from creator localization into campaigns, education, sales, or internal knowledge where the same primitives recur.</p><small>Earn breadth</small></article>
+        </div>
+
+        <h3 style="margin:65px 0 22px;font:400 32px var(--serif)">Product principles</h3>
+        <div class="principles">
+          <div class="principle"><b>Artifact, not chat</b><p>The conversation controls a durable, inspectable object with state and history.</p></div>
+          <div class="principle"><b>Local before global</b><p>A precise edit should not destroy approved work elsewhere in the graph.</p></div>
+          <div class="principle"><b>Evidence by default</b><p>Claims retain source links, uncertainty, and downstream dependencies.</p></div>
+          <div class="principle"><b>Consent travels</b><p>Rights, permitted uses, deletion, and disclosure remain attached to identity assets.</p></div>
+          <div class="principle"><b>Human gates matter</b><p>High-risk claims and likeness use stop at explicit approval boundaries.</p></div>
+          <div class="principle"><b>Models are replaceable</b><p>The system measures providers against the job instead of inheriting one model's worldview.</p></div>
+        </div>
+      </section>
+
+      <section class="final">
+        <div class="eyebrow">The synthesized conclusion</div>
+        <h2>Do not build the machine that can make <em>anything.</em></h2>
+        <p>Build the machine that reliably finishes one important thing. Capture the context, corrections, rights, and outcome signals that make it improve. If those primitives transfer, the Instant Thought Engine becomes the consequence—not the pitch.</p>
+      </section>
+
+      <section id="sources">
+        <div class="section-head">
+          <div class="section-no">10 / Evidence</div>
+          <div>
+            <h2>Research trail.</h2>
+            <p class="lede">Primary sources where possible. Vendor performance claims are treated as claims, not neutral benchmarks.</p>
+          </div>
+        </div>
+        <div class="sources">
+          <div class="source"><span>01</span><a href="https://arxiv.org/abs/2603.08823" target="_blank" rel="noopener">Fish Audio S2 Technical Report — architecture, benchmark and serving claims</a></div>
+          <div class="source"><span>02</span><a href="https://github.com/fishaudio/fish-speech" target="_blank" rel="noopener">Fish Speech repository — released implementation and model history</a></div>
+          <div class="source"><span>03</span><a href="https://huggingface.co/fishaudio/s2-pro/blob/main/LICENSE.md" target="_blank" rel="noopener">Fish Audio Research License — commercial-use limitations</a></div>
+          <div class="source"><span>04</span><a href="https://artificialanalysis.ai/text-to-speech/leaderboard/selected-voice" target="_blank" rel="noopener">Artificial Analysis — independent TTS leaderboard</a></div>
+          <div class="source"><span>05</span><a href="https://arxiv.org/html/2503.06505v2" target="_blank" rel="noopener">DynamicID — identity similarity and editability trade-offs</a></div>
+          <div class="source"><span>06</span><a href="https://arxiv.org/html/2503.16418v1" target="_blank" rel="noopener">InfiniteYou — identity-preserving generation remains challenging</a></div>
+          <div class="source"><span>07</span><a href="https://www.figma.com/blog/welcome-weavy-to-figma/" target="_blank" rel="noopener">Figma / Weavy — node-based multi-model creative workflows</a></div>
+          <div class="source"><span>08</span><a href="https://business.adobe.com/blog/meet-firefly-graph" target="_blank" rel="noopener">Adobe Firefly Graph — governed, reusable production workflows</a></div>
+          <div class="source"><span>09</span><a href="https://runway.com/workflows" target="_blank" rel="noopener">Runway Workflows — model and media-processing graphs</a></div>
+          <div class="source"><span>10</span><a href="https://flora.ai/" target="_blank" rel="noopener">FLORA — agentic infinite canvas and multi-model workflows</a></div>
+          <div class="source"><span>11</span><a href="https://www.canva.com/newsroom/news/canva-create-2026-ai/" target="_blank" rel="noopener">Canva Create 2026 — unfinished thought to editable work</a></div>
+          <div class="source"><span>12</span><a href="https://docs.comfy.org/registry/overview" target="_blank" rel="noopener">ComfyUI Registry — open workflow ecosystem and reusable nodes</a></div>
+          <div class="source"><span>13</span><a href="https://fal.ai/docs/documentation/model-apis/workflows" target="_blank" rel="noopener">fal Workflows — multi-model orchestration as infrastructure</a></div>
+          <div class="source"><span>14</span><a href="https://digital-strategy.ec.europa.eu/en/policies/guidelines-transparency-ai-generated-content" target="_blank" rel="noopener">European Commission — AI-generated content transparency guidance</a></div>
+          <div class="source"><span>15</span><a href="https://c2pa.org/specifications/specifications/2.2/index.html" target="_blank" rel="noopener">C2PA specification — interoperable content provenance</a></div>
+        </div>
+        <p class="source-note">Scope note: This is a strategic synthesis, not an investment recommendation or exhaustive market census. Competitor positions change quickly. Scores in the wedge comparison are directional hypotheses designed to force trade-offs; they should be replaced with observed customer data.</p>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    const nodeData = {
+      orchestrator: {
+        title: "Creation Graph",
+        copy: "A typed, versioned map of goals, claims, assets, dependencies, approvals, and outputs. It makes each artifact inspectable and each change local.",
+        question: "Core test: Can one corrected fact update every dependent output without rebuilding everything?"
+      },
+      intent: {
+        title: "Intent Model",
+        copy: "Turns an underspecified request into audience, objective, quality bar, constraints, budget, permissions, and a definition of done. It asks only questions that change the plan.",
+        question: "Failure mode: A polished artifact that solves the wrong job."
+      },
+      research: {
+        title: "Research + Evidence",
+        copy: "Builds a claim graph with sources, timestamps, confidence, conflicts, and permitted uses. Every generated script, visual, or calculation points back to evidence.",
+        question: "Failure mode: One plausible falsehood multiplying across every modality."
+      },
+      world: {
+        title: "World + Memory",
+        copy: "Maintains entities and state: who is present, what was said, where objects are, how a character looks and sounds, and which decisions are already approved.",
+        question: "Failure mode: Character, story, or product state drifting between scenes."
+      },
+      specialists: {
+        title: "Specialist Models",
+        copy: "Replaceable engines for text, speech, image, video, code, CAD, retrieval, and simulation. Routing is based on job-specific evidence—not a permanent provider preference.",
+        question: "Failure mode: Provider churn or one model's weakness becoming product behavior."
+      },
+      evaluation: {
+        title: "Evaluation",
+        copy: "Combines deterministic checks, model critics, vertical rubrics, user preference, and human approval. It evaluates components before expensive downstream work.",
+        question: "Failure mode: A generic score declaring a subjectively uncanny output “good.”"
+      },
+      editor: {
+        title: "Local Editor",
+        copy: "Lets the user change one claim, pronunciation, shot, gesture, object, or style decision while preserving everything outside its dependency boundary.",
+        question: "Core test: Does editing feel like directing, or like rerolling a slot machine?"
+      },
+      rights: {
+        title: "Rights + Provenance",
+        copy: "Attaches identity consent, source licenses, permitted uses, disclosures, deletion rules, and content credentials to every relevant artifact and derivative.",
+        question: "Failure mode: Trust and compliance bolted on after the asset has already escaped."
+      },
+      outcomes: {
+        title: "Outcome Feedback",
+        copy: "Captures what was approved, edited, rejected, published, retained, and converted. This is the signal that turns generic orchestration into personal or organizational judgment.",
+        question: "Moat test: Does real-world use make the next artifact measurably better?"
+      }
+    };
+
+    document.querySelectorAll(".node").forEach((button) => {
+      button.addEventListener("click", () => {
+        document.querySelectorAll(".node").forEach((n) => n.classList.remove("active"));
+        button.classList.add("active");
+        const data = nodeData[button.dataset.node];
+        document.querySelector("#node-title").textContent = data.title;
+        document.querySelector("#node-copy").textContent = data.copy;
+        document.querySelector("#node-question").textContent = data.question;
+      });
+    });
+
+    document.querySelectorAll(".tab").forEach((tab) => {
+      tab.addEventListener("click", () => {
+        document.querySelectorAll(".tab").forEach((item) => {
+          item.classList.remove("active");
+          item.setAttribute("aria-selected", "false");
+        });
+        document.querySelectorAll(".wedge-panel").forEach((panel) => panel.classList.remove("active"));
+        tab.classList.add("active");
+        tab.setAttribute("aria-selected", "true");
+        document.querySelector(`[data-panel="${tab.dataset.tab}"]`).classList.add("active");
+      });
+    });
+
+    const sections = [...document.querySelectorAll("main section[id]")];
+    const links = [...document.querySelectorAll("nav a")];
+    const progress = document.querySelector(".progress");
+
+    const updateScrollState = () => {
+      const scrollTop = window.scrollY;
+      const height = document.documentElement.scrollHeight - window.innerHeight;
+      progress.style.width = `${height > 0 ? (scrollTop / height) * 100 : 0}%`;
+
+      let current = sections[0]?.id;
+      sections.forEach((section) => {
+        if (scrollTop >= section.offsetTop - window.innerHeight * .35) current = section.id;
+      });
+      links.forEach((link) => link.classList.toggle("active", link.getAttribute("href") === `#${current}`));
+    };
+
+    updateScrollState();
+    window.addEventListener("scroll", updateScrollState, { passive: true });
+  </script>
+</body>
+</html>
