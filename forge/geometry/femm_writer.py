@@ -197,16 +197,30 @@ def write_winding_study(
     lines.append("mi_loadsolution()")
     lines.append(f'local h = openfile("Z:{result.as_posix()}", "w")')
     for winding in excitation:
-        lines.append(
-            f'local i_{winding}, v_{winding}, f_{winding} = '
-            f'mo_getcircuitproperties("{winding}")'
-        )
-        lines.append(
-            f'write(h, "{winding}.current=", i_{winding}, "\\n")'
-        )
-        lines.append(f'write(h, "{winding}.volts=", v_{winding}, "\\n")')
-        lines.append(f'write(h, "{winding}.flux=", f_{winding}, "\\n")')
+        if frequency_hz > 0:
+            # Harmonic mode returns real and imaginary parts, which is what
+            # makes R_ac and L separable from one solve.
+            lines.append(
+                f'local ir, ii, vr, vi, fr, fi = '
+                f'mo_getcircuitproperties("{winding}")'
+            )
+            for label, var in (
+                ("current_re", "ir"), ("current_im", "ii"),
+                ("volts_re", "vr"), ("volts_im", "vi"),
+                ("flux_re", "fr"), ("flux_im", "fi"),
+            ):
+                lines.append(f'write(h, "{winding}.{label}=", {var}, "\\n")')
+        else:
+            lines.append(
+                f'local ic, vc, fc = mo_getcircuitproperties("{winding}")'
+            )
+            for label, var in (
+                ("current_re", "ic"), ("volts_re", "vc"), ("flux_re", "fc")
+            ):
+                lines.append(f'write(h, "{winding}.{label}=", {var}, "\\n")')
+    lines.append("mo_selectblock(0,0)")
     lines.append('write(h, "energy=", mo_blockintegral(2), "\\n")')
+    lines.append("mo_clearblock()")
     lines.append("closefile(h)")
     lines.append("quit()")
 

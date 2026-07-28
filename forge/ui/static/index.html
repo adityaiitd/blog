@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FORGE — planar transformer design explorer</title>
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand">
+    <span class="mark">FORGE</span>
+    <span class="sub">planar transformer for an 800&nbsp;V&nbsp;→&nbsp;12.5&nbsp;V AI rack converter</span>
+  </div>
+  <div class="verdict" id="verdict"><span class="dot"></span><span id="verdict-text">evaluating…</span></div>
+</header>
+
+<div class="banner" id="claim-banner">
+  <strong>Simulation-backed preliminary design.</strong>
+  Not production-qualified. Hazardous high voltage. Independent safety and
+  regulatory review required before any hardware is built.
+  <button class="linkish" id="toggle-primer">New to this? Start here →</button>
+</div>
+
+<section class="primer" id="primer" hidden>
+  <h2>What is this thing, in plain terms</h2>
+  <div class="primer-grid">
+    <div>
+      <h3>The problem</h3>
+      <p>
+        An AI rack now draws hundreds of kilowatts. Delivering that at 12&nbsp;volts
+        would need absurdly thick copper, so power is distributed at
+        <strong>800&nbsp;volts</strong> and stepped down right next to the chips.
+        Something has to do that 64:1 conversion efficiently, in a space about
+        8&nbsp;mm tall.
+      </p>
+      <h3>The trick</h3>
+      <p>
+        Doing 800&nbsp;V→12.5&nbsp;V in one jump is hard, so the converter is split into
+        <strong>eight identical cells stacked in series</strong>. Each cell sees only
+        one eighth of the voltage — about 100&nbsp;V — and each supplies one eighth
+        of the current. Their outputs are wired in parallel. That turns one
+        brutal 64:1 problem into eight manageable 8:1 problems.
+      </p>
+      <h3>What you are designing</h3>
+      <p>
+        The transformer inside <em>one</em> of those cells. It is not a wound
+        component: the windings are <strong>copper layers etched into a printed
+        circuit board</strong>, sandwiched around a ferrite core. That is what
+        "planar" means.
+      </p>
+    </div>
+    <div>
+      <h3>The four things that fight each other</h3>
+      <dl class="tradeoffs">
+        <dt>Turns versus flux</dt>
+        <dd>More turns means less magnetic flux in the core, so less core loss —
+          but more copper, more resistance, and more layers.</dd>
+        <dt>Interleaving versus capacitance</dt>
+        <dd>Stacking primary and secondary layers alternately cuts resistive
+          loss sharply. It also puts them closer together more often, which
+          builds a capacitor that injects noise into the output.</dd>
+        <dt>Magnetising inductance versus switching</dt>
+        <dd>A small magnetising inductance lets the circuit switch losslessly,
+          but wastes current going round in circles even at no load.</dd>
+        <dt>Frequency versus everything</dt>
+        <dd>Higher frequency shrinks the magnetics but makes copper loss worse,
+          because current stops using the middle of the conductor.</dd>
+      </dl>
+      <p class="aside">
+        There is no setting where all four are happy. The sliders let you find
+        out which one is actually stopping you.
+      </p>
+    </div>
+  </div>
+</section>
+
+<main class="layout">
+
+  <aside class="controls" id="controls">
+    <h2>Design knobs</h2>
+    <div id="control-list"></div>
+    <div class="preset-row">
+      <button id="btn-reset">Reset to baseline</button>
+      <button id="btn-copy">Copy design as JSON</button>
+    </div>
+    <p class="hint">
+      Every change re-runs the real Python models on this machine. Nothing here
+      is a lookup table or a curve fit made up for the demo.
+    </p>
+  </aside>
+
+  <section class="results">
+
+    <div class="gatebar" id="gatebar"></div>
+
+    <div class="cards" id="cards"></div>
+
+    <div class="panelgrid">
+
+      <figure class="panel wide">
+        <figcaption>
+          <span>Board cross-section</span>
+          <small>what the stackup physically looks like, cut through the middle</small>
+        </figcaption>
+        <div id="viz-stackup" class="viz"></div>
+        <p class="caption" id="stackup-caption"></p>
+      </figure>
+
+      <figure class="panel">
+        <figcaption>
+          <span>Copper, seen from above</span>
+          <small>one layer's turns wrapping the core's centre post</small>
+        </figcaption>
+        <div id="viz-top" class="viz"></div>
+        <p class="caption" id="top-caption"></p>
+      </figure>
+
+      <figure class="panel">
+        <figcaption>
+          <span>Where the power is lost</span>
+          <small>every watt here becomes heat inside an 8&nbsp;mm module</small>
+        </figcaption>
+        <div id="viz-loss" class="viz"></div>
+        <p class="caption" id="loss-caption"></p>
+      </figure>
+
+      <figure class="panel">
+        <figcaption>
+          <span>Currents through one switching cycle</span>
+          <small>the shape of what the copper actually carries</small>
+        </figcaption>
+        <div id="viz-waves" class="viz"></div>
+        <p class="caption" id="waves-caption"></p>
+      </figure>
+
+      <figure class="panel">
+        <figcaption>
+          <span>Core flux</span>
+          <small>triangular, not sinusoidal — which changes the loss</small>
+        </figcaption>
+        <div id="viz-flux" class="viz"></div>
+        <p class="caption" id="flux-caption"></p>
+      </figure>
+
+      <figure class="panel">
+        <figcaption>
+          <span>Resonant tank gain</span>
+          <small>output voltage versus switching frequency</small>
+        </figcaption>
+        <div id="viz-gain" class="viz"></div>
+        <p class="caption" id="gain-caption"></p>
+      </figure>
+
+      <figure class="panel">
+        <figcaption>
+          <span>Temperature across unknown cooling</span>
+          <small>airflow is not specified, so the design must hold everywhere</small>
+        </figcaption>
+        <div id="viz-thermal" class="viz"></div>
+        <p class="caption" id="thermal-caption"></p>
+      </figure>
+
+      <figure class="panel wide">
+        <figcaption>
+          <span>Switching without waste (ZVS)</span>
+          <small>can the circuit drain the switch node before turning on?</small>
+        </figcaption>
+        <div id="viz-zvs" class="viz"></div>
+        <p class="caption" id="zvs-caption"></p>
+      </figure>
+
+    </div>
+
+    <details class="numbers">
+      <summary>All computed values</summary>
+      <div id="metric-table"></div>
+    </details>
+
+  </section>
+</main>
+
+<div class="tooltip" id="tooltip" hidden></div>
+
+<script src="/static/app.js"></script>
+</body>
+</html>
