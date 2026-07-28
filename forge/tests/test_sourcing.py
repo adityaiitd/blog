@@ -102,18 +102,51 @@ class CostModelTest(unittest.TestCase):
         )
         return [priced, missing]
 
-    def test_coverage_is_reported_not_hidden(self):
-        model = build_cost_model(self.quotes(), volume=1000)
+    def test_without_estimates_a_hole_stays_a_hole(self):
+        model = build_cost_model(self.quotes(), volume=1000,
+                                 allow_estimates=False)
         summary = model.summary()
         self.assertAlmostEqual(summary["coverage"], 0.5)
         self.assertTrue(summary["is_partial"])
         self.assertIn("LMG1020", summary["unpriced"])
-        self.assertIn("floor, not an estimate", summary["caveat"])
+        self.assertIn("floor", summary["caveat"])
 
     def test_unpriced_lines_do_not_silently_become_zero(self):
-        model = build_cost_model(self.quotes(), volume=1000)
+        model = build_cost_model(self.quotes(), volume=1000,
+                                 allow_estimates=False)
         self.assertEqual(len(model.unpriced_lines), 1)
         self.assertIsNone(model.unpriced_lines[0].extended_usd)
+
+    def test_estimates_fill_the_gap_but_stay_labelled(self):
+        """An estimate may complete the model; it may not masquerade as a quote."""
+        model = build_cost_model(self.quotes(), volume=1000,
+                                 allow_estimates=True)
+        summary = model.summary()
+        self.assertAlmostEqual(summary["coverage"], 1.0)
+        self.assertEqual(summary["quoted"], 1)
+        self.assertEqual(summary["estimated"], 1)
+        self.assertLess(summary["quoted_fraction_of_cost"], 1.0)
+        self.assertIn("estimates, not quotes", summary["caveat"])
+        estimated = model.estimated_lines[0]
+        self.assertEqual(estimated.mpn, "LMG1020")
+        self.assertTrue(estimated.note.startswith("ESTIMATE"))
+        self.assertIn(estimated.confidence, ("low", "medium", "high"))
+
+    def test_quoted_and_estimated_costs_partition_the_total(self):
+        model = build_cost_model(self.quotes(), volume=1000,
+                                 allow_estimates=True)
+        self.assertAlmostEqual(
+            model.quoted_cost_usd + model.estimated_cost_usd,
+            model.component_cost_usd,
+        )
+
+    def test_estimate_scales_with_volume(self):
+        low = build_cost_model(self.quotes(), volume=1, allow_estimates=True)
+        high = build_cost_model(self.quotes(), volume=100000,
+                                allow_estimates=True)
+        self.assertGreater(
+            low.estimated_lines[0].unit_usd, high.estimated_lines[0].unit_usd
+        )
 
     def test_shared_parts_counted_once_per_converter(self):
         quotes = self.quotes()
