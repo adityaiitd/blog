@@ -1,1 +1,7 @@
 .DS_store
+# FORGE
+forge/data/evidence_cache/
+forge/data/*.sqlite
+__pycache__/
+*.pyc
+build/
