@@ -1,0 +1,137 @@
+# Precommitted hardware acceptance criteria.
+#
+# Frozen before any prototype exists. Results are scored against this file by
+# hash. If a criterion is missed, that is a miss: thresholds are not widened
+# afterwards, and the comparison is not re-run with adjusted model parameters.
+#
+# Model parameters may be recalibrated only in a new version of the model,
+# using the measurements designated for calibration below. The hold-out
+# measurements must then pass these same criteria untouched.
+
+version: 1
+frozen_at: "before first prototype"
+applies_to: EPC91123-like 800 VDC to 12.5 V ISOP LLC, one 750 W cell
+
+# Which measurements may inform the model, and which are scored blind.
+calibration_measurements:
+  - core_loss_coupon        # material behaviour is legitimately calibrated
+holdout_measurements:
+  - magnetising_inductance
+  - leakage_matrix
+  - ac_resistance
+  - capacitance_matrix
+  - converter_efficiency
+  - hotspot_temperature
+  - zvs_margin
+  - cell_sharing
+
+criteria:
+
+  - key: magnetising_inductance
+    quantity: Open-circuit primary inductance
+    band: larger of the combined 95% measurement uncertainty or 10% relative
+    rationale: >-
+      The 2D field section omits corners, vias and end effects, so 10% is the
+      honest expectation rather than an aspiration. A tighter band would be
+      claiming accuracy the method does not have.
+
+  - key: leakage_matrix
+    quantity: Each term of the three-winding short-circuit inductance matrix
+    band: larger of the combined 95% uncertainty or 10% relative
+    rationale: >-
+      Leakage is a functional circuit element here, not a parasitic, so an
+      error detunes the resonant tank. It is also the quantity most sensitive
+      to layer registration, which is why five units from two panels are
+      required rather than one unit.
+
+  - key: ac_resistance
+    quantity: Winding AC resistance at the fundamental and third harmonic
+    band: larger of the combined 95% uncertainty or 10% relative
+    rationale: >-
+      Copper loss dominates this design, so this is the single most important
+      comparison for the loss model.
+
+  - key: capacitance_matrix
+    quantity: Primary-to-secondary capacitance, per interface where separable
+    band: larger of the combined 95% uncertainty or 15% relative
+    rationale: >-
+      Estimated from facing areas with no electrostatic solve behind it, so the
+      band is wider and honestly so.
+
+  - key: core_loss_coupon
+    quantity: Specific core loss under the actual flux waveform
+    band: 20% relative at each of three temperatures
+    rationale: >-
+      Datasheet loss points are typical values on toroids, and the fitted
+      exponents carry that. This is the designated calibration measurement.
+
+  - key: converter_efficiency
+    quantity: Total converter efficiency at each preregistered load point
+    band: 0.5 percentage points absolute
+    load_points: [0.10, 0.20, 0.50, 0.75, 1.00]
+    boundary: >-
+      DC input terminals to DC output terminals, with housekeeping power
+      supplied and measured separately, not folded in.
+    rationale: >-
+      Without a stated measurement boundary an efficiency figure cannot be
+      compared with anyone else's, including our own prediction.
+
+  - key: hotspot_temperature
+    quantity: Winding and core hot-spot temperature
+    band: larger of the combined 95% uncertainty or 10 K
+    requires:
+      - measured airflow rate at the module
+      - measured inlet air temperature
+      - documented heatsink and interface material
+    rationale: >-
+      Without the cooling boundary recorded, this comparison is unscoreable and
+      must be reported as such rather than given a pass.
+
+  - key: zvs_margin
+    quantity: Switch node voltage at the instant the next device turns on
+    band: below 10% of the cell voltage at every required corner
+    corners:
+      - input: [90, 100, 110]        # volts per cell
+      - load: [0.05, 0.25, 0.50, 1.00]
+      - temperature: [25, 85, 125]   # degrees C
+    rationale: >-
+      Simulation predicts ZVS with surplus charge. Predicted is not confirmed:
+      the model treats device output capacitance as linear, which understates
+      the charge stored near zero volts and therefore reads optimistic.
+
+  - key: cell_sharing
+    quantity: Input voltage of every cell, steady state and during transients
+    band: no cell above the frozen fault containment limit at any time
+    conditions:
+      - startup and precharge
+      - no load, light load, full load
+      - load steps
+      - single cell open, shorted, lost gate drive, lost synchronous rectifier
+    rationale: >-
+      Mismatch simulation gives a 19.8% spread from 10% load mismatch, and
+      losing two cells drives survivors to 133 V against a 120 V derated limit.
+      Natural balancing is a hypothesis under test, not an assumption.
+
+  - key: insulation
+    quantity: Creepage, clearance, dielectric withstand and partial discharge
+    band: pass without waiver against the recorded IEC design basis
+    rationale: >-
+      The spacings currently in the requirements lock are conservative
+      placeholders. A licensed reviewer must replace them before this criterion
+      means anything, and no amount of successful electrical testing
+      substitutes for that review.
+
+promotion:
+  grants_phrase: model-validated prototype
+  requires:
+    - results reference this file's content hash
+    - every criterion above evaluated, none skipped
+    - every criterion passing
+    - no safety-critical gate open
+    - no post-hoc adjustment of thresholds or model parameters
+  never_grants:
+    - production-qualified
+  because: >-
+    Production qualification requires independent regulatory certification,
+    reliability qualification and manufacturing process qualification. None of
+    those is in scope here, and passing this protocol does not imply them.
