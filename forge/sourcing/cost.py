@@ -354,12 +354,16 @@ def supply_risks(quotes: Sequence[PartQuote]) -> List[SupplyRisk]:
                 "Request a direct quote, or price an equivalent second source.",
             ))
         if quote.stock is not None and quote.stock < 5000:
+            # Parts shared across the whole converter carry qty_per_cell = 0,
+            # so fall back to one per converter rather than reporting "needs 0".
+            per_converter = quote.qty_per_cell * 8 or 1
+            builds = quote.stock // per_converter
             risks.append(SupplyRisk(
                 quote.mpn,
                 f"Only {quote.stock:,} units in stock at the source that "
-                "published a price. A 6 kW converter needs "
-                f"{quote.qty_per_cell * 8} per unit.",
-                "high" if quote.stock < 1000 else "medium",
+                f"published a price. At {per_converter} per converter that is "
+                f"about {builds:,} builds.",
+                "high" if builds < 500 else "medium",
                 "Qualify a second source, or place a scheduled order early.",
             ))
     return risks
