@@ -13,6 +13,12 @@
     <span class="mark">FORGE</span>
     <span class="sub">planar transformer for an 800&nbsp;V&nbsp;→&nbsp;12.5&nbsp;V AI rack converter</span>
   </div>
+  <nav class="modes" id="modes">
+    <button data-mode="learn">Learn</button>
+    <button data-mode="explore" class="on">Explore</button>
+    <button data-mode="parts">Parts</button>
+    <button data-mode="sourcing">Sourcing</button>
+  </nav>
   <div class="verdict" id="verdict"><span class="dot"></span><span id="verdict-text">evaluating…</span></div>
 </header>
 
@@ -76,7 +82,9 @@
   </div>
 </section>
 
-<main class="layout">
+<div id="mode-host"></div>
+
+<main class="layout" id="explore-mode">
 
   <aside class="controls" id="controls">
     <h2>Design knobs</h2>
@@ -183,6 +191,8 @@
 
 <div class="tooltip" id="tooltip" hidden></div>
 
+<script src="/static/learn.js"></script>
+<script src="/static/modes.js"></script>
 <script src="/static/app.js"></script>
 </body>
 </html>

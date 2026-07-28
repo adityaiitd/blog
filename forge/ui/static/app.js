@@ -864,6 +864,37 @@ async function run() {
   }, 60);
 }
 
+let SOURCING = null;
+
+async function switchMode(mode) {
+  for (const b of document.querySelectorAll("#modes button")) {
+    b.classList.toggle("on", b.dataset.mode === mode);
+  }
+  const explore = $("explore-mode"), host = $("mode-host");
+  const banner = $("claim-banner");
+  host.innerHTML = "";
+  if (mode === "explore") {
+    explore.hidden = false; host.hidden = true; banner.hidden = false;
+    $("verdict").hidden = false;
+    return;
+  }
+  explore.hidden = true; host.hidden = false;
+  $("verdict").hidden = mode !== "explore";
+  banner.hidden = mode === "learn";
+
+  if (mode === "learn") {
+    host.appendChild(renderLearn());
+    wireLearn();
+  } else {
+    if (!SOURCING) {
+      SOURCING = await (await fetch("/api/sourcing?volume=1000")).json();
+    }
+    host.appendChild(mode === "parts"
+      ? renderParts(SOURCING) : renderSourcing(SOURCING));
+  }
+  window.scrollTo(0, 0);
+}
+
 async function init() {
   OPTIONS = await (await fetch("/api/options")).json();
   STATE = { ...OPTIONS.defaults };
@@ -876,6 +907,9 @@ async function init() {
     $("btn-copy").textContent = "Copied";
     setTimeout(() => ($("btn-copy").textContent = "Copy design as JSON"), 1400);
   });
+  for (const b of document.querySelectorAll("#modes button")) {
+    b.addEventListener("click", () => switchMode(b.dataset.mode));
+  }
   $("toggle-primer").addEventListener("click", () => {
     const p = $("primer");
     p.hidden = !p.hidden;

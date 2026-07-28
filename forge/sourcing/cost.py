@@ -72,6 +72,85 @@ class PcbEstimate:
         )
 
 
+@dataclass(frozen=True)
+class PriceEstimate:
+    """A best-effort price for a line no vendor would quote to a machine.
+
+    Kept structurally separate from a quote. An estimate carries the reasoning
+    that produced it and is never merged into the quoted figure, so a reader
+    can always see how much of a cost is measured and how much is judgement.
+    """
+
+    unit_usd_at_1k: float
+    basis: str
+    confidence: str            # low | medium | high
+
+    def at_volume(self, volume: int) -> float:
+        """Scale the 1k reference price to another build volume.
+
+        Semiconductor and passive pricing flattens above a few thousand and
+        rises sharply below a hundred. This is a coarse curve, which is why
+        the confidence field exists.
+        """
+        if volume < 10:
+            return self.unit_usd_at_1k * 2.1
+        if volume < 100:
+            return self.unit_usd_at_1k * 1.55
+        if volume < 1000:
+            return self.unit_usd_at_1k * 1.2
+        if volume < 10000:
+            return self.unit_usd_at_1k
+        return self.unit_usd_at_1k * 0.88
+
+
+#: Best-effort prices for the lines no vendor publishes machine-readably.
+#: Every one of these is judgement, not a quote, and is labelled as such
+#: everywhere it appears.
+PRICE_ESTIMATES: Dict[str, PriceEstimate] = {
+    "LMG1020": PriceEstimate(
+        1.20,
+        "Single-channel low-side GaN driver in a 6-pin WSON. Comparable "
+        "high-speed drivers from the same vendor sit near a dollar at "
+        "thousand-piece volume.",
+        "medium",
+    ),
+    "ISO7740": PriceEstimate(
+        2.30,
+        "Four-channel reinforced digital isolator in SOIC-16. Isolation "
+        "channels carry a persistent premium over plain logic.",
+        "medium",
+    ),
+    "MP18831": PriceEstimate(
+        1.85,
+        "Vendor page showed roughly $2.91 at one piece falling toward $1.82 at "
+        "a thousand before the extraction was rejected for an inconsistent "
+        "ladder. The trend is used, the exact figures are not.",
+        "medium",
+    ),
+    "DSPIC33CK256MP605": PriceEstimate(
+        3.60,
+        "16-bit motor and power control MCU with 256 kB flash in a 64-pin "
+        "package. One per converter, so it is amortised across eight cells.",
+        "medium",
+    ),
+    "MIE1W0505BGLVH": PriceEstimate(
+        4.40,
+        "1 W isolated DC-DC brick. Small isolated bias modules are "
+        "disproportionately expensive for their power because the isolation "
+        "transformer dominates their cost, not the silicon.",
+        "low",
+    ),
+    "ELP18/4/10-3F46": PriceEstimate(
+        1.10,
+        "Small planar ferrite core half in a high-frequency material. Planar "
+        "sets in this size band are typically under two dollars at volume; "
+        "the high-frequency material commands a premium over standard power "
+        "ferrite.",
+        "low",
+    ),
+}
+
+
 @dataclass
 class CostLine:
     mpn: str
@@ -81,10 +160,21 @@ class CostLine:
     extended_usd: Optional[float]
     status: str
     note: str = ""
+    #: 'quoted' when a vendor published it, 'estimated' when we judged it.
+    basis: str = "quoted"
+    confidence: str = ""
 
     @property
     def priced(self) -> bool:
         return self.extended_usd is not None
+
+    @property
+    def is_quoted(self) -> bool:
+        return self.priced and self.basis == "quoted"
+
+    @property
+    def is_estimated(self) -> bool:
+        return self.priced and self.basis == "estimated"
 
 
 @dataclass
@@ -106,15 +196,37 @@ class CostModel:
         return [line for line in self.lines if not line.priced]
 
     @property
+    def quoted_lines(self) -> List[CostLine]:
+        return [line for line in self.lines if line.is_quoted]
+
+    @property
+    def estimated_lines(self) -> List[CostLine]:
+        return [line for line in self.lines if line.is_estimated]
+
+    @property
     def component_cost_usd(self) -> float:
         return sum(line.extended_usd or 0.0 for line in self.priced_lines)
 
     @property
+    def quoted_cost_usd(self) -> float:
+        return sum(line.extended_usd or 0.0 for line in self.quoted_lines)
+
+    @property
+    def estimated_cost_usd(self) -> float:
+        return sum(line.extended_usd or 0.0 for line in self.estimated_lines)
+
+    @property
     def coverage(self) -> float:
-        """Fraction of BOM lines that carry a real price."""
+        """Fraction of BOM lines that carry any price, quoted or estimated."""
         if not self.lines:
             return 0.0
         return len(self.priced_lines) / len(self.lines)
+
+    @property
+    def quoted_fraction_of_cost(self) -> float:
+        """How much of the component cost rests on real vendor prices."""
+        total = self.component_cost_usd
+        return self.quoted_cost_usd / total if total else 0.0
 
     @property
     def adder_cost_usd(self) -> float:
@@ -134,22 +246,38 @@ class CostModel:
         return self.total_usd / self.output_kw if self.output_kw else 0.0
 
     def summary(self) -> Dict[str, object]:
+        if self.coverage < 1.0:
+            caveat = (
+                f"{len(self.unpriced_lines)} of {len(self.lines)} lines carry "
+                "no price at all, so the total is a floor."
+            )
+        elif self.estimated_lines:
+            caveat = (
+                f"{len(self.quoted_lines)} of {len(self.lines)} lines are real "
+                f"vendor quotes, covering "
+                f"{self.quoted_fraction_of_cost*100:.0f}% of component cost. "
+                f"The remaining {len(self.estimated_lines)} are best-effort "
+                "estimates, not quotes."
+            )
+        else:
+            caveat = "Every line is a real vendor quote."
         return {
             "volume": self.volume,
             "component_cost_usd": self.component_cost_usd,
+            "quoted_cost_usd": self.quoted_cost_usd,
+            "estimated_cost_usd": self.estimated_cost_usd,
+            "quoted_fraction_of_cost": self.quoted_fraction_of_cost,
             "pcb_cost_usd": self.pcb_cost_usd,
             "adder_cost_usd": self.adder_cost_usd,
             "total_usd": self.total_usd,
             "usd_per_kw": self.usd_per_kw,
             "coverage": self.coverage,
             "priced": len(self.priced_lines),
+            "quoted": len(self.quoted_lines),
+            "estimated": len(self.estimated_lines),
             "unpriced": [line.mpn for line in self.unpriced_lines],
             "is_partial": self.coverage < 1.0,
-            "caveat": (
-                "Partial: "
-                f"{len(self.unpriced_lines)} of {len(self.lines)} lines carry no "
-                "retrievable price, so the total is a floor, not an estimate."
-            ) if self.coverage < 1.0 else "All lines priced.",
+            "caveat": caveat,
         }
 
 
@@ -160,6 +288,7 @@ def build_cost_model(
     pcb: Optional[PcbEstimate] = None,
     output_kw: float = 6.0,
     shared_per_converter: Optional[Dict[str, int]] = None,
+    allow_estimates: bool = True,
 ) -> CostModel:
     """Assemble a converter-level cost from per-part quotes.
 
@@ -177,11 +306,17 @@ def build_cost_model(
         else:
             qty = quote.qty_per_cell * cells
         unit = quote.price_at(max(volume * qty, 1))
+        basis, confidence, note = "quoted", "", quote.note
+        if unit is None and allow_estimates and quote.mpn in PRICE_ESTIMATES:
+            estimate = PRICE_ESTIMATES[quote.mpn]
+            unit = estimate.at_volume(max(volume * qty, 1))
+            basis, confidence = "estimated", estimate.confidence
+            note = f"ESTIMATE ({estimate.confidence} confidence): {estimate.basis}"
         extended = unit * qty if unit is not None else None
         model.lines.append(CostLine(
             mpn=quote.mpn, role=quote.role, qty_per_converter=qty,
             unit_usd=unit, extended_usd=extended, status=quote.status,
-            note=quote.note,
+            note=note, basis=basis, confidence=confidence,
         ))
 
     if pcb is not None:

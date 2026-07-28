@@ -79,6 +79,64 @@ def options_payload() -> Dict[str, Any]:
     }
 
 
+def sourcing_payload(volume: int = 1000) -> Dict[str, Any]:
+    """Cost model, quotes and risks, with quoted and estimated kept apart."""
+    from ..sourcing.cost import (
+        STRUCTURAL_RISKS, PcbEstimate, build_cost_model, supply_risks,
+    )
+    from ..sourcing.harvest import CELL_BOM, load
+
+    quotes_path = Path(__file__).resolve().parents[1] / "data" / "quotes.json"
+    if not quotes_path.exists():
+        return {"error": "no quotes harvested yet; run forge.sourcing.harvest"}
+
+    quotes = load(quotes_path)
+    pcb = PcbEstimate(layers=12, copper_oz=2.0, area_mm2=22.0 * 24.1)
+    model = build_cost_model(quotes, volume=volume, pcb=pcb)
+    by_mpn = {q.mpn: q for q in quotes}
+
+    lines = []
+    for line in sorted(model.lines, key=lambda l: -(l.extended_usd or 0.0)):
+        quote = by_mpn.get(line.mpn)
+        lines.append({
+            "mpn": line.mpn,
+            "role": line.role,
+            "qty": line.qty_per_converter,
+            "unit_usd": line.unit_usd,
+            "extended_usd": line.extended_usd,
+            "basis": line.basis,
+            "confidence": line.confidence,
+            "note": line.note,
+            "stock": quote.stock if quote else None,
+            "url": quote.url if quote else "",
+            "manufacturer": quote.manufacturer if quote else "",
+            "retrieved_at": quote.retrieved_at if quote else "",
+        })
+
+    risks = [
+        {"part": r.part, "concern": r.concern, "severity": r.severity,
+         "mitigation": r.mitigation}
+        for r in supply_risks(quotes) + STRUCTURAL_RISKS
+    ]
+    volumes = {}
+    for v in (10, 100, 1000, 10000):
+        m = build_cost_model(quotes, volume=v, pcb=pcb)
+        volumes[v] = {
+            "total_usd": m.total_usd, "usd_per_kw": m.usd_per_kw,
+            "components_usd": m.component_cost_usd,
+        }
+    return {
+        "summary": model.summary(),
+        "lines": lines,
+        "risks": risks,
+        "pcb": {"description": pcb.describe(),
+                "unit_usd": pcb.unit_cost_usd(volume), "boards": 8},
+        "adders": model.adders,
+        "volume_curve": volumes,
+        "bom_size": len(CELL_BOM),
+    }
+
+
 class Handler(BaseHTTPRequestHandler):
     protocol_version = "HTTP/1.1"
 
@@ -100,6 +158,12 @@ class Handler(BaseHTTPRequestHandler):
         path = urlparse(self.path).path
         if path == "/api/options":
             self._json(options_payload())
+            return
+        if path.startswith("/api/sourcing"):
+            from urllib.parse import parse_qs
+            query = parse_qs(urlparse(self.path).query)
+            volume = int(query.get("volume", ["1000"])[0])
+            self._json(sourcing_payload(volume))
             return
         if path in ("/", "/index.html"):
             self._serve_static("index.html", "text/html; charset=utf-8")
