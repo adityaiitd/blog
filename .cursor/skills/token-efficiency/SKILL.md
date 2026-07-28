@@ -97,8 +97,13 @@ Installer usage:
 ```bash
 scripts/install-global.sh                        # skill -> ~/.cursor/skills, rule -> clipboard
 scripts/install-global.sh --repo ~/code/app      # also drop the .mdc into another repo
+scripts/install-global.sh --verify               # report what is installed where
 scripts/install-global.sh --print-rule           # just print the User Rules text
 ```
+
+A skill that appears in one Cursor window but not another is almost always installed at
+project level only; `--verify` distinguishes the two, since a copy under a repository's
+`.cursor/skills/` is visible in that project alone.
 
 Skills are discovered when Cursor starts, so restart after installing one and confirm it
 appears under Customize -> Skills. Rule precedence is Team Rules, then Project Rules,
