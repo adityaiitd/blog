@@ -20,17 +20,22 @@ from ..solve.design_point import DesignInputs, evaluate
 
 STATIC = Path(__file__).resolve().parent / "static"
 
-_CATALOG: Optional[Catalog] = None
-_LOCK = threading.Lock()
+#: One catalog per thread.
+#:
+#: SQLite connections are bound to the thread that created them, and this is a
+#: threading server, so a single shared instance fails on every request handled
+#: by a different worker. That failure is invisible locally when requests
+#: happen to land on one thread, and shows up as an intermittent 500 under any
+#: real concurrency.
+_LOCAL = threading.local()
 
 
 def catalog() -> Catalog:
-    """One catalog connection, guarded because sqlite objects are not shared."""
-    global _CATALOG
-    with _LOCK:
-        if _CATALOG is None:
-            _CATALOG = Catalog()
-        return _CATALOG
+    existing = getattr(_LOCAL, "catalog", None)
+    if existing is None:
+        existing = Catalog()
+        _LOCAL.catalog = existing
+    return existing
 
 
 def options_payload() -> Dict[str, Any]:
