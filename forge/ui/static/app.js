@@ -885,6 +885,9 @@ async function switchMode(mode) {
   if (mode === "learn") {
     host.appendChild(renderLearn());
     wireLearn();
+  } else if (mode === "diagrams") {
+    host.appendChild(renderDiagrams());
+    wireDiagrams();
   } else {
     if (!SOURCING) {
       SOURCING = await (await fetch("/api/sourcing?volume=1000")).json();

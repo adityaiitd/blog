@@ -472,3 +472,74 @@ function renderSourcing(d) {
     <div class="riskgrid">${risks}</div>`;
   return host;
 }
+
+
+/* -------------------------------------------------------------- diagrams */
+
+const RENDERS = [
+  ["part_planar_transformer.jpg", "The transformer itself",
+   "Two ferrite core halves clamped around a multilayer board. The copper " +
+   "racetracks etched into the board are the windings — there is no wire in " +
+   "this component at all."],
+  ["part_ferrite_core.jpg", "Planar ferrite core set",
+   "An ELP-style pair. Note the wide rectangular centre post: that shape is " +
+   "why the turns are racetracks rather than circles, and it sets the mean " +
+   "length of every turn."],
+  ["part_stackup_cutaway.jpg", "Inside the board",
+   "Alternating copper and dielectric, with the two thicker layers being the " +
+   "safety barriers between the hazardous primary and the low-voltage " +
+   "secondary. The vertical barrels are plated vias carrying secondary current."],
+  ["part_gan_fet.jpg", "Gallium nitride transistor",
+   "A few millimetres across. Forty-eight of these per converter, and over " +
+   "half the component cost. The charge stored in its output capacitance is " +
+   "what the tank has to drain for lossless switching."],
+  ["part_converter_module.jpg", "The assembled converter",
+   "Eight identical cells in a row, 8 mm tall, 6 kW total. High-voltage " +
+   "input at one end, a wide copper output bar at the other."]
+];
+
+function renderDiagrams() {
+  const host = document.createElement("div");
+  host.className = "learn";
+  host.innerHTML = `
+    <section class="scope-hero">
+      <h1>How it goes together</h1>
+      <p>
+        Schematics first, then what the parts physically look like. The
+        diagrams are drawn from the same architecture the rest of the tool
+        evaluates, so component counts, the turns ratio and the isolation
+        boundaries all match. Hover anything for what it does.
+      </p>
+    </section>
+    <div id="diagram-list"></div>
+    <section class="scope-hero" style="margin-top:34px">
+      <h2>The physical parts</h2>
+      <p class="render-note">
+        These are illustrative renders for orientation, not engineering
+        drawings. Dimensions and markings in them are not authoritative; the
+        numbers in Explore and Sourcing are.
+      </p>
+    </section>
+    <div class="rendergrid">
+      ${RENDERS.map(([file, title, caption]) => `
+        <figure class="rendercard">
+          <img src="/static/img/${file}" alt="${title}" loading="lazy">
+          <figcaption><strong>${title}</strong><span>${caption}</span></figcaption>
+        </figure>`).join("")}
+    </div>`;
+  return host;
+}
+
+function wireDiagrams() {
+  const list = $("diagram-list");
+  for (const [title, sub, fn] of DIAGRAMS) {
+    const fig = document.createElement("figure");
+    fig.className = "panel wide diagram";
+    fig.innerHTML = `<figcaption><span>${title}</span><small>${sub}</small></figcaption>
+      <div class="viz"></div>`;
+    list.appendChild(fig);
+    try { fn(fig.querySelector(".viz")); }
+    catch (e) { fig.querySelector(".viz").innerHTML =
+      `<p class="caption">diagram failed: ${e.message}</p>`; }
+  }
+}

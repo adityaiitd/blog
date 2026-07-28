@@ -142,6 +142,26 @@ def sourcing_payload(volume: int = 1000) -> Dict[str, Any]:
     }
 
 
+#: Serving an image as text/plain makes the browser render nothing at all,
+#: with a 200 that looks fine in a log.
+_CONTENT_TYPES = {
+    ".css": "text/css",
+    ".js": "application/javascript",
+    ".html": "text/html; charset=utf-8",
+    ".json": "application/json",
+    ".jpg": "image/jpeg",
+    ".jpeg": "image/jpeg",
+    ".png": "image/png",
+    ".svg": "image/svg+xml",
+    ".webp": "image/webp",
+}
+
+
+def _content_type(name: str) -> str:
+    suffix = Path(name).suffix.lower()
+    return _CONTENT_TYPES.get(suffix, "application/octet-stream")
+
+
 class Handler(BaseHTTPRequestHandler):
     protocol_version = "HTTP/1.1"
 
@@ -175,12 +195,7 @@ class Handler(BaseHTTPRequestHandler):
             return
         if path.startswith("/static/"):
             name = path[len("/static/"):]
-            kind = (
-                "text/css" if name.endswith(".css")
-                else "application/javascript" if name.endswith(".js")
-                else "text/plain"
-            )
-            self._serve_static(name, kind)
+            self._serve_static(name, _content_type(name))
             return
         self._send(404, b"not found", "text/plain")
 
