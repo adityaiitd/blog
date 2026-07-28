@@ -1,0 +1,910 @@
+forge_requirements_lock: 1
+diablo_interface:
+  scope: diablo_interface
+  title: OCP Diablo 400 disaggregated power rack interface
+  description: Upstream constraints only. The sidecar rectifies medium-voltage AC to a nominal bipolar
+    +/-400 VDC bus, with a two-wire 800 VDC output permitted as a design option. FORGE designs a downstream
+    DC/DC that must be compatible with this interface; the interface does not define that converter.
+  provenance_counts:
+    sourced: 10
+    derived: 4
+  requirements:
+  - key: diablo.architecture
+    value: bipolar_pm400_or_unipolar_800
+    scope: diablo_interface
+    category: input_architecture
+    provenance: sourced
+    rationale: The PSU module outputs 400 Vdc as a floating three-wire arrangement (+400, -400, Common),
+      with a design option connected at the power shelf output as two wires for 800 VDC.
+    source_key: ocp_diablo_400_v070
+    locator: section 8.2.1
+    discrete: false
+  - key: diablo.rail_voltage_full_load
+    value: 400.0
+    unit: V
+    scope: diablo_interface
+    category: input_architecture
+    provenance: sourced
+    rationale: +400 to COM measured at the PSU or power shelf output connector.
+    source_key: ocp_diablo_400_v052
+    locator: section 9.3.1, Table 4
+    tolerance:
+    - -0.005
+    - 0.005
+    discrete: false
+  - key: diablo.rail_voltage_no_load
+    value: 410.0
+    unit: V
+    scope: diablo_interface
+    category: input_architecture
+    provenance: sourced
+    rationale: Nominal at no load. A 10 V +/-0.5 V droop is built into the setpoint, so the rail falls
+      to 400 V at full load.
+    source_key: ocp_diablo_400_v052
+    locator: section 9.3.1, Table 4
+    discrete: false
+  - key: diablo.rail_droop
+    value: 10.0
+    unit: V
+    scope: diablo_interface
+    category: output_regulation
+    provenance: sourced
+    rationale: V_droop dc built into the nominal setpoint.
+    source_key: ocp_diablo_400_v052
+    locator: section 9.3.1, Table 4
+    tolerance:
+    - -0.5
+    - 0.5
+    discrete: false
+  - key: diablo.rail_transient_excursion
+    value: 0.03
+    unit: fraction
+    scope: diablo_interface
+    category: output_regulation
+    provenance: sourced
+    rationale: Output voltage transient overshoot/undershoot of +/-3% from the typical set point. This
+      sets the downstream converter's transient input envelope.
+    source_key: ocp_diablo_400_v052
+    locator: section 9.3.1, Table 4
+    discrete: false
+  - key: diablo.rail_ripple
+    value: 0.02
+    unit: fraction_pk_pk
+    scope: diablo_interface
+    category: output_regulation
+    provenance: sourced
+    rationale: Ripple and noise stated as +/-1% or +/-2% pk-pk. The larger figure is carried as the conservative
+      bound; the specification text marks this row provisional, so it is re-checked against the released
+      revision.
+    source_key: ocp_diablo_400_v052
+    locator: section 9.3.1, Table 4
+    discrete: false
+    notes: Draft table row; treat as provisional pending a final revision.
+  - key: diablo.isolation_from_pe
+    value: required
+    scope: diablo_interface
+    category: insulation
+    provenance: sourced
+    rationale: In the two-wire 800 VDC option the 800 VDC and Return shall be safety isolated from PE
+      ground, and downstream converters shall have safety isolated inputs from PE ground. This is the
+      one insulation requirement Diablo places directly on the converter FORGE designs.
+    source_key: ocp_diablo_400_v070
+    locator: section 8.2.1
+    discrete: false
+  - key: diablo.psu_holdup
+    value: 0.02
+    unit: s
+    scope: diablo_interface
+    category: sequencing
+    provenance: sourced
+    rationale: Minimum holdup without energy storage is up to 20 ms at 100% loading. This is a requirement
+      on the AC/DC PSU, not on the downstream DC/DC. Distributed holdup between the PSU and the downstream
+      converter is described as acceptable, which makes downstream holdup an option to be allocated rather
+      than an inherited obligation.
+    source_key: ocp_diablo_400_v070
+    locator: section 7.1.3.1
+    discrete: false
+    notes: Do not apply this to the converter brief without an explicit allocation decision recorded as
+      its own requirement.
+  - key: diablo.rack_efficiency_20pct
+    value: 0.95
+    unit: fraction
+    scope: diablo_interface
+    category: efficiency_boundary
+    provenance: sourced
+    rationale: End-to-end rack efficiency greater than 95% at 20% load, measured from the AC PDU input
+      to the DC PDU output and including cooling, distribution, control and backup losses. This is a rack
+      figure and is explicitly not a target for the downstream DC/DC converter.
+    source_key: ocp_diablo_400_v070
+    locator: section 7.3.4, Table 9
+    discrete: false
+  - key: diablo.downstream_converter_location
+    value: outside_rack
+    scope: diablo_interface
+    category: input_architecture
+    provenance: sourced
+    rationale: The distribution cable terminates at an IT rack DC/DC converter shelf located outside the
+      sidecar, confirming that the converter FORGE designs sits beyond Diablo's specified boundary.
+    source_key: ocp_diablo_400_v070
+    locator: sections 7.1.3.1, 8.4
+    discrete: false
+  - key: diablo.bus_800v_full_load
+    value: 800.0
+    unit: V
+    scope: diablo_interface
+    category: input_architecture
+    provenance: derived
+    rationale: 'Two-wire 800 VDC option, rail to rail: 2 x 400 V at full load.'
+    discrete: false
+  - key: diablo.bus_800v_no_load
+    value: 820.0
+    unit: V
+    scope: diablo_interface
+    category: input_architecture
+    provenance: derived
+    rationale: 'Two-wire 800 VDC option, rail to rail: 2 x 410 V at no load.'
+    discrete: false
+  - key: diablo.bus_800v_max_steady
+    value: 824.1
+    unit: V
+    scope: diablo_interface
+    category: input_architecture
+    provenance: derived
+    rationale: 'Worst-case steady bus: no-load 820 V raised by the +0.5% regulation tolerance, 820 x 1.005
+      = 824.1 V.'
+    discrete: false
+  - key: diablo.bus_800v_max_transient
+    value: 844.6
+    unit: V
+    scope: diablo_interface
+    category: input_architecture
+    provenance: derived
+    rationale: 'Worst-case transient bus: no-load 820 V raised by the +3% transient excursion, 820 x 1.03
+      = 844.6 V. This is the voltage the downstream converter''s input stage must survive.'
+    discrete: false
+converter_brief:
+  scope: converter_brief
+  title: EPC91123-like 800 VDC to 12.5 V, 6 kW ISOP LLC converter
+  description: Eight half-bridge LLC cells with series-connected inputs and parallel- connected outputs.
+    Each cell nominally sees one eighth of the bus and supplies one eighth of the output current. FORGE
+    designs the planar transformer for one cell and verifies the eight-cell system behaviour.
+  provenance_counts:
+    sourced: 16
+    derived: 5
+    assumed: 42
+  requirements:
+  - key: conv.topology
+    value: isop_8_cell_half_bridge_llc
+    scope: converter_brief
+    category: input_architecture
+    provenance: sourced
+    rationale: 'Input-series output-parallel arrangement of eight LLC modules. EPC gives the motivation
+      directly: with 150 V GaN on the primary the transformer becomes 4:1:1 at 750 W per cell, instead
+      of 16:1:1 at 3 kW if 650 V devices were used across the full bus.'
+    source_key: epc91123_kit_guide
+    locator: Benefits of the ISOP Topology; Converter Specifications
+    discrete: false
+  - key: conv.cell_count
+    value: 8
+    scope: converter_brief
+    category: input_architecture
+    provenance: sourced
+    rationale: ISOP of 8 LLC modules.
+    source_key: epc91123_kit_guide
+    locator: Converter Specifications
+    discrete: false
+  - key: conv.v_in_system_nominal
+    value: 800.0
+    unit: V
+    scope: converter_brief
+    category: input_architecture
+    provenance: sourced
+    rationale: Voltage ratio 800 V to 12.5 V, fixed.
+    source_key: epc91123_kit_guide
+    locator: Converter Specifications
+    discrete: false
+  - key: conv.v_cell_nominal
+    value: 100.0
+    unit: V
+    scope: converter_brief
+    category: input_architecture
+    provenance: sourced
+    rationale: Each LLC module has V_IN = 100 V. This is the nominal balanced operating point, not a guaranteed
+      division; see conv.isop_* requirements.
+    source_key: epc91123_kit_guide
+    locator: Converter Specifications; circuit diagram
+    discrete: false
+  - key: conv.v_cell_max_steady
+    value: 103.0
+    unit: V
+    scope: converter_brief
+    category: input_architecture
+    provenance: derived
+    rationale: Worst-case steady bus from the Diablo interface, 824.1 V, divided evenly across eight cells.
+      Even division is itself an assumption bounded by the mismatch requirement below.
+    discrete: false
+  - key: conv.v_cell_max_transient
+    value: 105.6
+    unit: V
+    scope: converter_brief
+    category: input_architecture
+    provenance: derived
+    rationale: Worst-case transient bus from the Diablo interface, 844.6 V, divided evenly across eight
+      cells.
+    discrete: false
+  - key: conv.v_cell_absolute_max
+    value: 120.0
+    unit: V
+    scope: converter_brief
+    category: input_architecture
+    provenance: assumed
+    rationale: Design ceiling for a single cell including sharing error and transients. Set below the
+      150 V rating of the EPC2305 primary device to preserve derating margin. The sweep range explores
+      how much sharing error the design can absorb before the device rating is the binding constraint.
+    sensitivity:
+    - 110.0
+    - 135.0
+    discrete: false
+  - key: conv.v_out_nominal
+    value: 12.5
+    unit: V
+    scope: converter_brief
+    category: output_regulation
+    provenance: sourced
+    rationale: 12.5 V output.
+    source_key: epc91123_kit_guide
+    locator: Converter Specifications
+    discrete: false
+  - key: conv.operation_mode
+    value: fixed_ratio_dcx
+    scope: converter_brief
+    category: output_regulation
+    provenance: sourced
+    rationale: The voltage ratio is stated as fixed, so the converter is a DC transformer operating at
+      resonance rather than a regulated supply. Output voltage therefore follows the input and droops
+      with load.
+    source_key: epc91123_kit_guide
+    locator: Converter Specifications
+    discrete: false
+  - key: conv.v_out_tolerance
+    value: 0.05
+    unit: fraction
+    scope: converter_brief
+    category: output_regulation
+    provenance: assumed
+    rationale: No public figure exists for this kit's output tolerance. A fixed-ratio DCX has no feedback
+      loop, so its output window is set by input variation plus droop. Five percent is a working allowance
+      to be confirmed against the load's actual requirement.
+    sensitivity:
+    - 0.03
+    - 0.08
+    discrete: false
+  - key: conv.v_out_ripple_pk_pk
+    value: 0.02
+    unit: fraction
+    scope: converter_brief
+    category: output_regulation
+    provenance: assumed
+    rationale: Not published for this kit. Carried as an assumption so that output capacitance and secondary-loop
+      inductance have a target to meet.
+    sensitivity:
+    - 0.01
+    - 0.03
+    discrete: false
+  - key: conv.p_out_total
+    value: 6000.0
+    unit: W
+    scope: converter_brief
+    category: power_and_load
+    provenance: sourced
+    rationale: P_OUT = 6 kW.
+    source_key: epc91123_kit_guide
+    locator: Converter Specifications
+    discrete: false
+  - key: conv.p_out_cell
+    value: 750.0
+    unit: W
+    scope: converter_brief
+    category: power_and_load
+    provenance: sourced
+    rationale: 'Each LLC module: 100 V to 12.5 V, 750 W.'
+    source_key: epc91123_kit_guide
+    locator: Converter Specifications; circuit diagram
+    discrete: false
+  - key: conv.i_out_cell
+    value: 60.0
+    unit: A
+    scope: converter_brief
+    category: power_and_load
+    provenance: derived
+    rationale: 750 W at 12.5 V gives 60 A per cell.
+    discrete: false
+  - key: conv.i_out_total
+    value: 480.0
+    unit: A
+    scope: converter_brief
+    category: power_and_load
+    provenance: derived
+    rationale: Eight cells in parallel at 60 A each.
+    discrete: false
+  - key: conv.load_range
+    value:
+    - 0.0
+    - 1.0
+    unit: fraction_of_rated
+    scope: converter_brief
+    category: power_and_load
+    provenance: assumed
+    rationale: 'The converter must behave from no load to full load. Light load is the hard case for a
+      DCX: magnetizing current no longer scales down with load, so both ZVS and efficiency need checking
+      there.'
+    discrete: false
+  - key: conv.min_load_for_zvs
+    value: 0.05
+    unit: fraction_of_rated
+    scope: converter_brief
+    category: power_and_load
+    provenance: assumed
+    rationale: Load below which ZVS is not required to hold. In an LLC the magnetizing current provides
+      the commutation charge, so ZVS should survive to no load, but that must be demonstrated rather than
+      assumed.
+    sensitivity:
+    - 0.0
+    - 0.15
+    discrete: false
+  - key: conv.load_step
+    value: 0.5
+    unit: fraction_of_rated
+    scope: converter_brief
+    category: power_and_load
+    provenance: assumed
+    rationale: AI accelerator loads are notoriously step-like. Diablo describes rack dynamic loading requirements
+      but does not specify the step seen by an individual downstream converter, so this is a project assumption.
+    sensitivity:
+    - 0.25
+    - 1.0
+    discrete: false
+  - key: conv.startup_precharge
+    value: required
+    scope: converter_brief
+    category: sequencing
+    provenance: assumed
+    rationale: Series-connected inputs must be precharged in a controlled way. Without it, capacitor tolerance
+      alone decides the initial voltage division and a single cell can be driven past its device rating
+      before switching starts.
+    discrete: false
+  - key: conv.cell_synchronisation
+    value: common_frequency_interleaved
+    scope: converter_brief
+    category: sequencing
+    provenance: assumed
+    rationale: EPC notes that interleaving the LLC modules reduces the number of bus capacitors, which
+      implies a shared switching frequency with phase offset. The exact scheme is not published, so it
+      is carried as an assumption.
+    discrete: false
+  - key: conv.downstream_holdup_allocation
+    value: 0.0
+    unit: s
+    scope: converter_brief
+    category: sequencing
+    provenance: assumed
+    rationale: Diablo permits but does not require distributed holdup in the downstream converter. The
+      baseline allocates none, keeping the 20 ms obligation with the AC/DC PSU. The sweep bounds what
+      downstream storage would cost if a system integrator later allocates part of it here.
+    sensitivity:
+    - 0.0
+    - 0.02
+    discrete: false
+  - key: conv.fault_modes
+    value:
+    - open_cell
+    - short_cell
+    - lost_gate_drive
+    - lost_synchronous_rectification
+    - output_short
+    - overvoltage
+    - overtemperature
+    scope: converter_brief
+    category: faults
+    provenance: assumed
+    rationale: 'The failure set that must be simulated. Open-cell is the dangerous one for an ISOP stack:
+      the remaining cells absorb the departed cell''s share of the bus, so the survivors'' input voltage
+      rises toward the device rating.'
+    discrete: false
+  - key: conv.fault_containment_v_cell
+    value: 135.0
+    unit: V
+    scope: converter_brief
+    category: faults
+    provenance: assumed
+    rationale: Maximum cell voltage permitted during any single fault before protection must act, held
+      below the 150 V EPC2305 rating with margin. This is the binding safety number for the ISOP arrangement.
+    sensitivity:
+    - 120.0
+    - 145.0
+    discrete: false
+  - key: conv.isop_balancing_claim
+    value: natural_balancing_to_be_verified
+    scope: converter_brief
+    category: isop_mismatch
+    provenance: sourced
+    rationale: EPC states the ISOP arrangement is self balancing. Series inputs enforce a common current
+      and parallel outputs a common voltage, but neither directly enforces equal input voltages. FORGE
+      treats the claim as a hypothesis to test against component mismatch, not as an identity.
+    source_key: epc91123_kit_guide
+    locator: Converter Specifications
+    discrete: false
+  - key: conv.isop_sharing_error_max
+    value: 0.1
+    unit: fraction
+    scope: converter_brief
+    category: isop_mismatch
+    provenance: assumed
+    rationale: Permitted deviation of any cell's input voltage or output current from the eight-cell mean
+      under worst-case component tolerance. Combined with the nominal 100 V this sets the sharing budget
+      that keeps cells inside conv.v_cell_absolute_max.
+    sensitivity:
+    - 0.05
+    - 0.2
+    discrete: false
+  - key: conv.mismatch_tolerances
+    value:
+      resonant_capacitor: 0.05
+      magnetizing_inductance: 0.1
+      leakage_inductance: 0.15
+      input_capacitance: 0.2
+      deadtime: 0.1
+      core_gap: 0.05
+    unit: fraction
+    scope: converter_brief
+    category: isop_mismatch
+    provenance: assumed
+    rationale: Per-parameter spreads used in the mismatch sweep. Leakage is given the widest band because
+      it depends on PCB stackup registration, which is the least controlled dimension in a planar transformer.
+    discrete: false
+  - key: conv.cooling_mode
+    value: forced_air
+    scope: converter_brief
+    category: cooling_boundary
+    provenance: assumed
+    rationale: EPC publishes an 8 mm tall converter but no thermal test setup. Forced air is the baseline;
+      a cold-plate variant is a separate study because it changes the dominant thermal path rather than
+      merely its magnitude.
+    discrete: false
+  - key: conv.ambient_temperature
+    value: 45.0
+    unit: degC
+    scope: converter_brief
+    category: cooling_boundary
+    provenance: assumed
+    rationale: Inlet air temperature at the converter. Data centre inlet conditions vary widely, so this
+      is swept rather than fixed.
+    sensitivity:
+    - 25.0
+    - 55.0
+    discrete: false
+  - key: conv.airflow_velocity
+    value: 3.0
+    unit: m/s
+    scope: converter_brief
+    category: cooling_boundary
+    provenance: assumed
+    rationale: Approach velocity over the module. Unknown airflow is the single largest source of thermal
+      uncertainty here, so the thermal model reports a surface over this range instead of one temperature.
+    sensitivity:
+    - 1.0
+    - 6.0
+    discrete: false
+  - key: conv.heatsink_resistance
+    value: 3.0
+    unit: K/W
+    scope: converter_brief
+    category: cooling_boundary
+    provenance: assumed
+    rationale: 'Thermal resistance from the transformer to ambient through the board, any interface material
+      and a heatsink or cold plate. Screening showed this requirement was missing and that its absence
+      alone decides feasibility: the core footprint is only a few square centimetres, so convection to
+      air over that area cannot remove the loss on its own. EPC publishes an 8 mm converter height but
+      no thermal construction, so the value is assumed and swept.'
+    sensitivity:
+    - 1.5
+    - 6.0
+    discrete: false
+  - key: conv.t_max_core
+    value: 100.0
+    unit: degC
+    scope: converter_brief
+    category: cooling_boundary
+    provenance: assumed
+    rationale: Ferrite loss has a minimum near 80-100 C and rises again beyond it, and permeability falls
+      as the Curie temperature is approached. Holding the core near its loss minimum is the design intent.
+    sensitivity:
+    - 90.0
+    - 110.0
+    discrete: false
+  - key: conv.t_max_winding
+    value: 125.0
+    unit: degC
+    scope: converter_brief
+    category: cooling_boundary
+    provenance: assumed
+    rationale: Copper hotspot ceiling, set by the PCB laminate rather than the copper. Confirm against
+      the chosen laminate's maximum operating temperature.
+    sensitivity:
+    - 110.0
+    - 135.0
+    discrete: false
+  - key: conv.efficiency_reference_peak
+    value: 0.982
+    unit: fraction
+    scope: converter_brief
+    category: efficiency_boundary
+    provenance: sourced
+    rationale: Approximate peak efficiency read from EPC's published curve. A performance reference for
+      a comparable design, not a requirement on this one.
+    source_key: epc91123_kit_guide
+    locator: Converter Performance
+    discrete: false
+    notes: Read from a plotted curve; treat as approximate.
+  - key: conv.efficiency_reference_full_load
+    value: 0.97
+    unit: fraction
+    scope: converter_brief
+    category: efficiency_boundary
+    provenance: sourced
+    rationale: Approximate efficiency near the 480 A full-load point from the same curve. Notably lower
+      than the peak, which is why an unqualified "better than 98%" target would be misleading.
+    source_key: epc91123_kit_guide
+    locator: Converter Performance
+    discrete: false
+    notes: Read from a plotted curve; treat as approximate.
+  - key: conv.housekeeping_power
+    value: 7.5
+    unit: W
+    scope: converter_brief
+    category: efficiency_boundary
+    provenance: sourced
+    rationale: About 7.5 W of housekeeping for the whole ISOP converter, roughly 0.94 W per module. Reported
+      separately from conversion loss so that efficiency comparisons state whether auxiliaries are inside
+      the boundary.
+    source_key: epc91123_kit_guide
+    locator: Converter Performance
+    discrete: false
+  - key: conv.efficiency_measurement_boundary
+    value: dc_input_terminals_to_dc_output_terminals_excluding_housekeeping
+    scope: converter_brief
+    category: efficiency_boundary
+    provenance: assumed
+    rationale: Efficiency is quoted from the 800 V input terminals to the 12.5 V output terminals with
+      housekeeping reported separately. Without a stated boundary an efficiency number cannot be compared
+      with anyone else's.
+    discrete: false
+  - key: conv.efficiency_report_points
+    value:
+    - 0.1
+    - 0.2
+    - 0.5
+    - 0.75
+    - 1.0
+    unit: fraction_of_rated
+    scope: converter_brief
+    category: efficiency_boundary
+    provenance: assumed
+    rationale: Load points at which efficiency must be reported, so that a flattering peak cannot stand
+      in for the curve.
+    discrete: false
+  - key: conv.transformer_board_layers
+    value: 14
+    scope: converter_brief
+    category: manufacturing
+    provenance: sourced
+    rationale: 'Transformer board: 14 layers.'
+    source_key: epc91123_kit_guide
+    locator: Converter Construction
+    discrete: false
+  - key: conv.power_board_layers
+    value: 6
+    scope: converter_brief
+    category: manufacturing
+    provenance: sourced
+    rationale: 'Power board and motherboard: 6 layers.'
+    source_key: epc91123_kit_guide
+    locator: Converter Construction
+    discrete: false
+  - key: conv.converter_area
+    value: 4982.0
+    unit: mm2
+    scope: converter_brief
+    category: manufacturing
+    provenance: sourced
+    rationale: Area 4982 mm2, quoted as 830 mm2 per kW.
+    source_key: epc91123_kit_guide
+    locator: Converter Specifications
+    discrete: false
+  - key: conv.converter_height
+    value: 8.0
+    unit: mm
+    scope: converter_brief
+    category: manufacturing
+    provenance: sourced
+    rationale: '8 mm overall height. This is the hard constraint on core selection: the planar core plus
+      board must fit inside it.'
+    source_key: epc91123_kit_guide
+    locator: Converter Specifications
+    discrete: false
+  - key: conv.copper_weight_inner
+    value: 2.0
+    unit: oz
+    scope: converter_brief
+    category: manufacturing
+    provenance: assumed
+    rationale: Inner-layer copper weight. Two ounces is 69.6 um, close to one skin depth at the intended
+      switching frequency, so this is a genuine design variable rather than a default. Swept because thicker
+      copper stops helping once it exceeds the skin depth.
+    sensitivity:
+    - 1.0
+    - 3.0
+    discrete: false
+  - key: conv.min_trace_width
+    value: 0.1
+    unit: mm
+    scope: converter_brief
+    category: manufacturing
+    provenance: assumed
+    rationale: Standard volume PCB capability; tighter rules raise cost.
+    sensitivity:
+    - 0.075
+    - 0.15
+    discrete: false
+  - key: conv.min_via_drill
+    value: 0.2
+    unit: mm
+    scope: converter_brief
+    category: manufacturing
+    provenance: assumed
+    rationale: 'Mechanical drill floor. Via count and resistance matter here: a one-turn 60 A secondary
+      carries its current through vias, and their resistance is routinely left out of loss estimates.'
+    sensitivity:
+    - 0.15
+    - 0.3
+    discrete: false
+  - key: conv.insulation_standard
+    value:
+    - IEC 62368-1
+    - UL 62368-1
+    - IEC 60664-1
+    scope: converter_brief
+    category: insulation
+    provenance: assumed
+    rationale: ICT equipment safety plus insulation coordination. Recorded as the acceptance basis so
+      creepage, clearance and test voltages are derived from a named standard rather than invented. Editions
+      must be recorded by the reviewer holding the licensed copies.
+    discrete: false
+  - key: conv.insulation_working_voltage
+    value: 844.6
+    unit: V
+    scope: converter_brief
+    category: insulation
+    provenance: derived
+    rationale: The crucial consequence of stacking cells in series. Although each cell switches only about
+      100 V locally, the primary of the top cell floats near the full bus with respect to the shared 12.5
+      V secondary. The barrier is therefore designed for the worst-case transient bus, 844.6 V, not for
+      100 V.
+    discrete: false
+  - key: conv.insulation_grade
+    value: reinforced
+    scope: converter_brief
+    category: insulation
+    provenance: assumed
+    rationale: The secondary is an operator-accessible low-voltage circuit while the primary side is at
+      hazardous voltage, so the barrier between them is treated as reinforced pending a licensed reviewer's
+      classification.
+    discrete: false
+  - key: conv.overvoltage_category
+    value: II
+    scope: converter_brief
+    category: insulation
+    provenance: assumed
+    rationale: The converter is supplied from a rectified DC bus inside the building rather than directly
+      from the mains supply. Must be confirmed against the installation.
+    discrete: false
+  - key: conv.pollution_degree
+    value: 2
+    scope: converter_brief
+    category: insulation
+    provenance: assumed
+    rationale: Conditioned, enclosed data centre equipment.
+    discrete: true
+  - key: conv.material_group
+    value: IIIa
+    scope: converter_brief
+    category: insulation
+    provenance: assumed
+    rationale: Standard FR-4 with CTI between 175 and 400. A higher-CTI laminate would relax creepage
+      and is an option if the barrier proves difficult.
+    discrete: false
+  - key: conv.altitude_max
+    value: 2000.0
+    unit: m
+    scope: converter_brief
+    category: insulation
+    provenance: assumed
+    rationale: Clearance must be corrected for reduced air density above 2000 m. Swept because data centres
+      are increasingly sited at altitude.
+    sensitivity:
+    - 0.0
+    - 3000.0
+    discrete: false
+  - key: conv.clearance_reinforced
+    value: 3.2
+    unit: mm
+    scope: converter_brief
+    category: insulation
+    provenance: assumed
+    rationale: Conservative placeholder. The governing tables are in licensed IEC documents that FORGE
+      may not reproduce, so this value is explicitly a project assumption pending confirmation by a reviewer
+      with access. The insulation gate cannot pass on this value alone.
+    sensitivity:
+    - 2.0
+    - 5.0
+    discrete: false
+  - key: conv.creepage_reinforced
+    value: 6.4
+    unit: mm
+    scope: converter_brief
+    category: insulation
+    provenance: assumed
+    rationale: Conservative placeholder on the same basis as the clearance value, and subject to the same
+      restriction.
+    sensitivity:
+    - 4.0
+    - 10.0
+    discrete: false
+  - key: conv.solid_insulation_min
+    value: 0.4
+    unit: mm
+    scope: converter_brief
+    category: insulation
+    provenance: assumed
+    rationale: 'Minimum dielectric thickness between primary and secondary copper in the planar stackup.
+      This is the requirement most in tension with performance: thicker dielectric is safer but increases
+      leakage inductance and worsens coupling.'
+    sensitivity:
+    - 0.2
+    - 0.6
+    discrete: false
+  - key: conv.hipot_test_voltage
+    value: 4000.0
+    unit: Vrms
+    scope: converter_brief
+    category: insulation
+    provenance: assumed
+    rationale: Production dielectric withstand target for 60 s, placeholder pending the licensed derivation
+      from the working voltage.
+    sensitivity:
+    - 3000.0
+    - 5000.0
+    discrete: false
+  - key: conv.partial_discharge_required
+    value: true
+    scope: converter_brief
+    category: insulation
+    provenance: assumed
+    rationale: Thin solid insulation under repetitive high dv/dt is exactly the condition where partial
+      discharge erodes a barrier that passes a hipot test. Screening is required before any stacked-bus
+      operation.
+    discrete: false
+  - key: conv.cm_capacitance_max
+    value: 50.0
+    unit: pF
+    scope: converter_brief
+    category: emi_common_mode
+    provenance: assumed
+    rationale: Primary-to-secondary capacitance budget per cell. Interleaving windings lowers leakage
+      and copper loss but raises this capacitance, so the two cannot be optimised independently.
+    sensitivity:
+    - 20.0
+    - 200.0
+    discrete: false
+  - key: conv.dvdt_max
+    value: 50.0
+    unit: V/ns
+    scope: converter_brief
+    category: emi_common_mode
+    provenance: assumed
+    rationale: Switch-node slew rate. Combined with the capacitance budget this sets the displacement
+      current injected into the shared output and chassis.
+    sensitivity:
+    - 20.0
+    - 100.0
+    discrete: false
+  - key: conv.cm_current_max
+    value: 0.05
+    unit: A
+    scope: converter_brief
+    category: emi_common_mode
+    provenance: assumed
+    rationale: Common-mode current budget per cell, from i_cm = C_ps dv/dt. Eight cells at different bus
+      potentials all inject into one output bus.
+    sensitivity:
+    - 0.01
+    - 0.2
+    discrete: false
+  - key: conv.device_voltage_derating
+    value: 0.8
+    unit: fraction
+    scope: converter_brief
+    category: derating_lifetime
+    provenance: assumed
+    rationale: Maximum fraction of a semiconductor's rated voltage permitted under worst-case transient.
+      Against the 150 V EPC2305 this allows 120 V, which is what sets conv.v_cell_absolute_max.
+    sensitivity:
+    - 0.7
+    - 0.85
+    discrete: false
+  - key: conv.capacitor_derating
+    value: 0.7
+    unit: fraction
+    scope: converter_brief
+    category: derating_lifetime
+    provenance: assumed
+    rationale: Class II ceramics lose substantial capacitance under DC bias, so the resonant capacitor
+      must be specified at its biased value, not its nameplate.
+    sensitivity:
+    - 0.5
+    - 0.8
+    discrete: false
+  - key: conv.service_life
+    value: 5.0
+    unit: years
+    scope: converter_brief
+    category: derating_lifetime
+    provenance: assumed
+    rationale: Continuous operation at rated load; sets thermal ageing limits.
+    sensitivity:
+    - 3.0
+    - 10.0
+    discrete: false
+  - key: conv.core_flux_derating
+    value: 0.7
+    unit: fraction
+    scope: converter_brief
+    category: derating_lifetime
+    provenance: assumed
+    rationale: Peak flux density held below this fraction of saturation at the maximum core temperature,
+      where saturation flux is lowest.
+    sensitivity:
+    - 0.6
+    - 0.8
+    discrete: false
+validation:
+  ok: true
+  errors: []
+  warnings:
+  - '''diablo.architecture'' cites ''ocp_diablo_400_v070'' whose status is ''blocked''; the value was
+    read from an earlier retrieval and cannot be re-verified automatically until the manual gate is satisfied'
+  - '''diablo.rail_voltage_full_load'' cites ''ocp_diablo_400_v052'' whose status is ''blocked''; the
+    value was read from an earlier retrieval and cannot be re-verified automatically until the manual
+    gate is satisfied'
+  - '''diablo.rail_voltage_no_load'' cites ''ocp_diablo_400_v052'' whose status is ''blocked''; the value
+    was read from an earlier retrieval and cannot be re-verified automatically until the manual gate is
+    satisfied'
+  - '''diablo.rail_droop'' cites ''ocp_diablo_400_v052'' whose status is ''blocked''; the value was read
+    from an earlier retrieval and cannot be re-verified automatically until the manual gate is satisfied'
+  - '''diablo.rail_transient_excursion'' cites ''ocp_diablo_400_v052'' whose status is ''blocked''; the
+    value was read from an earlier retrieval and cannot be re-verified automatically until the manual
+    gate is satisfied'
+  - '''diablo.rail_ripple'' cites ''ocp_diablo_400_v052'' whose status is ''blocked''; the value was read
+    from an earlier retrieval and cannot be re-verified automatically until the manual gate is satisfied'
+  - '''diablo.isolation_from_pe'' cites ''ocp_diablo_400_v070'' whose status is ''blocked''; the value
+    was read from an earlier retrieval and cannot be re-verified automatically until the manual gate is
+    satisfied'
+  - '''diablo.psu_holdup'' cites ''ocp_diablo_400_v070'' whose status is ''blocked''; the value was read
+    from an earlier retrieval and cannot be re-verified automatically until the manual gate is satisfied'
+  - '''diablo.rack_efficiency_20pct'' cites ''ocp_diablo_400_v070'' whose status is ''blocked''; the value
+    was read from an earlier retrieval and cannot be re-verified automatically until the manual gate is
+    satisfied'
+  - '''diablo.downstream_converter_location'' cites ''ocp_diablo_400_v070'' whose status is ''blocked'';
+    the value was read from an earlier retrieval and cannot be re-verified automatically until the manual
+    gate is satisfied'
+content_hash: b2a12fe4c5867d6cfbb81796fce1be9e66ae1e14906f68068eeb5116b0fd04f6

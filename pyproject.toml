@@ -1,0 +1,41 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "forge-transformer"
+version = "0.1.0"
+description = "Design tool for the planar transformer in an 800 VDC to 12.5 V AI rack converter"
+requires-python = ">=3.10"
+dependencies = [
+    "numpy>=1.24",
+    "scipy>=1.10",
+    "matplotlib>=3.7",
+    "pymupdf>=1.23",
+    "pyyaml>=6.0",
+    "websocket-client>=1.6",
+]
+
+[project.scripts]
+forge = "forge.__main__:main"
+
+[tool.setuptools]
+# Only the forge package. The rest of this repository is an unrelated archive.
+packages = [
+    "forge",
+    "forge.browser",
+    "forge.data",
+    "forge.evidence",
+    "forge.geometry",
+    "forge.physics",
+    "forge.requirements",
+    "forge.solve",
+    "forge.sourcing",
+    "forge.ui",
+    "forge.verify",
+]
+
+[tool.setuptools.package-data]
+"forge.ui" = ["static/*"]
+"forge.data" = ["*.sql", "*.json"]
+"forge.requirements" = ["*.yaml"]

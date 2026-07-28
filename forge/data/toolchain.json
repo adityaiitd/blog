@@ -1,0 +1,112 @@
+{
+  "tools": {
+    "numpy": {
+      "name": "numpy",
+      "purpose": "array maths",
+      "status": "available",
+      "version": "2.4.4",
+      "path": "/usr/local/lib/python3.12/dist-packages/numpy/__init__.py",
+      "fallback": "",
+      "detail": ""
+    },
+    "scipy": {
+      "name": "scipy",
+      "purpose": "optimisation, interpolation, FFT",
+      "status": "available",
+      "version": "1.18.0",
+      "path": "/home/ubuntu/.local/lib/python3.12/site-packages/scipy/__init__.py",
+      "fallback": "",
+      "detail": ""
+    },
+    "matplotlib": {
+      "name": "matplotlib",
+      "purpose": "report figures",
+      "status": "available",
+      "version": "3.11.1",
+      "path": "/home/ubuntu/.local/lib/python3.12/site-packages/matplotlib/__init__.py",
+      "fallback": "",
+      "detail": ""
+    },
+    "fitz": {
+      "name": "fitz",
+      "purpose": "PDF text and table extraction",
+      "status": "available",
+      "version": "1.28.0",
+      "path": "/home/ubuntu/.local/lib/python3.12/site-packages/fitz/__init__.py",
+      "fallback": "",
+      "detail": ""
+    },
+    "yaml": {
+      "name": "yaml",
+      "purpose": "requirement and protocol files",
+      "status": "available",
+      "version": "6.0.1",
+      "path": "/usr/lib/python3/dist-packages/yaml/__init__.py",
+      "fallback": "",
+      "detail": ""
+    },
+    "ngspice": {
+      "name": "ngspice",
+      "purpose": "FHA gain sweeps, averaged ISOP studies, switched transients",
+      "status": "available",
+      "version": "ngspice-42",
+      "path": "/usr/bin/ngspice",
+      "fallback": "analytic FHA only; no switched ZVS prediction",
+      "detail": ""
+    },
+    "kicad-cli": {
+      "name": "kicad-cli",
+      "purpose": "DRC, Gerber/drill export and board reopen checks",
+      "status": "available",
+      "version": "10.0.5",
+      "path": "/usr/bin/kicad-cli",
+      "fallback": "geometry emitted but unverified; no manufacturing release",
+      "detail": ""
+    },
+    "wine": {
+      "name": "wine",
+      "purpose": "host FEMM 4.2 (a Windows binary) for 2D field studies",
+      "status": "available",
+      "version": "wine-9.0 (Ubuntu 9.0~repack-4build3)",
+      "path": "/usr/bin/wine",
+      "fallback": "no 2D FEA; analytic screening only, field results UNVERIFIED",
+      "detail": ""
+    },
+    "femm": {
+      "name": "femm",
+      "purpose": "2D magnetostatic and harmonic field solutions",
+      "status": "available",
+      "version": "4.2",
+      "path": "/home/ubuntu/.wine/drive_c/femm42/bin/femm.exe",
+      "fallback": "Dowell/Ferreira analytics for screening; every field quantity marked UNVERIFIED and 3D omissions unbounded",
+      "detail": ""
+    },
+    "google-chrome": {
+      "name": "google-chrome",
+      "purpose": "retrieve sources that reject plain HTTP clients",
+      "status": "available",
+      "version": "Google Chrome 148.0.7778.96",
+      "path": "/usr/local/bin/google-chrome",
+      "fallback": "direct HTTP only; blocked sources recorded as manual gates",
+      "detail": ""
+    },
+    "x-display": {
+      "name": "x-display",
+      "purpose": "headful Chrome and any GUI tool",
+      "status": "available",
+      "version": "dimensions:    1920x1200 pixels (508x318 millimeters)",
+      "path": "",
+      "fallback": "headless Chrome; GUI tools unavailable",
+      "detail": "DISPLAY=:1"
+    }
+  },
+  "capabilities": {
+    "field_2d_fea": false,
+    "switched_circuit_sim": true,
+    "manufacturing_release": true,
+    "browser_retrieval": true,
+    "pdf_table_extraction": true,
+    "numeric_optimisation": true
+  },
+  "downgrades": []
+}

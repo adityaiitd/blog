@@ -1,0 +1,183 @@
+{
+ "retrieved_at": "2026-07-28T21:56:40+00:00",
+ "quotes": [
+  {
+   "mpn": "EPC2305",
+   "manufacturer": "EPC",
+   "role": "Primary half-bridge GaN FET, 150 V",
+   "qty_per_cell": 2,
+   "source": "EPC",
+   "url": "https://epc-co.com/epc/products/gan-fets-and-ics/epc2305",
+   "breaks": [
+    {
+     "quantity": 1,
+     "unit_price_usd": 8.81
+    },
+    {
+     "quantity": 10,
+     "unit_price_usd": 6.001
+    },
+    {
+     "quantity": 50,
+     "unit_price_usd": 4.7976
+    },
+    {
+     "quantity": 100,
+     "unit_price_usd": 4.4107
+    },
+    {
+     "quantity": 500,
+     "unit_price_usd": 4.3605
+    },
+    {
+     "quantity": 3000,
+     "unit_price_usd": 3.5625
+    }
+   ],
+   "stock": 21980,
+   "lead_time_weeks": null,
+   "currency": "USD",
+   "retrieved_at": "2026-07-28T21:55:17+00:00",
+   "sha256": "87c90c4525f9e6a557b1e2c55feb6396f9f45d957477909bf132c8197df03a2b",
+   "status": "quoted",
+   "note": "[manufacturer direct, fulfilled through Digi-Key]"
+  },
+  {
+   "mpn": "EPC2366",
+   "manufacturer": "EPC",
+   "role": "Secondary synchronous rectifier GaN FET, 40 V",
+   "qty_per_cell": 4,
+   "source": "EPC",
+   "url": "https://epc-co.com/epc/products/gan-fets-and-ics/epc2366",
+   "breaks": [
+    {
+     "quantity": 1,
+     "unit_price_usd": 4.76
+    },
+    {
+     "quantity": 10,
+     "unit_price_usd": 3.14
+    },
+    {
+     "quantity": 50,
+     "unit_price_usd": 2.4448
+    },
+    {
+     "quantity": 100,
+     "unit_price_usd": 2.2211
+    },
+    {
+     "quantity": 500,
+     "unit_price_usd": 1.9125
+    },
+    {
+     "quantity": 3000,
+     "unit_price_usd": 1.5625
+    }
+   ],
+   "stock": 4203,
+   "lead_time_weeks": null,
+   "currency": "USD",
+   "retrieved_at": "2026-07-28T21:55:27+00:00",
+   "sha256": "632a5572468e201c9d8efe3dc6acc2b5c687a97976cee47fbbd85bd038197947",
+   "status": "quoted",
+   "note": "[manufacturer direct, fulfilled through Digi-Key]"
+  },
+  {
+   "mpn": "LMG1020",
+   "manufacturer": "Texas Instruments",
+   "role": "Low-side gate driver",
+   "qty_per_cell": 2,
+   "source": "Texas Instruments",
+   "url": "https://www.ti.com/product/LMG1020",
+   "breaks": [],
+   "stock": null,
+   "lead_time_weeks": null,
+   "currency": "USD",
+   "retrieved_at": "2026-07-28T21:55:38+00:00",
+   "sha256": "c916fccdcf4e86193f675dbdb9b96bbbc3c010404a094e439a2babfd14d0452c",
+   "status": "unavailable",
+   "note": "[page retrieved but published no price ladder]"
+  },
+  {
+   "mpn": "ISO7740",
+   "manufacturer": "Texas Instruments",
+   "role": "Four-channel digital isolator",
+   "qty_per_cell": 0,
+   "source": "Texas Instruments",
+   "url": "https://www.ti.com/product/ISO7740",
+   "breaks": [],
+   "stock": null,
+   "lead_time_weeks": null,
+   "currency": "USD",
+   "retrieved_at": "2026-07-28T21:55:48+00:00",
+   "sha256": "32b0d578600beb2c9a35422011ad2cee0af454b6035ee9805bd8c009223da25a",
+   "status": "unavailable",
+   "note": "Two per converter, shared across the eight cells [page retrieved but published no price ladder]"
+  },
+  {
+   "mpn": "MP18831",
+   "manufacturer": "Monolithic Power Systems",
+   "role": "Isolated two-channel gate driver",
+   "qty_per_cell": 1,
+   "source": "Monolithic Power Systems",
+   "url": "https://www.monolithicpower.com/en/products/mp18831.html",
+   "breaks": [],
+   "stock": null,
+   "lead_time_weeks": null,
+   "currency": "USD",
+   "retrieved_at": "2026-07-28T21:55:58+00:00",
+   "sha256": "d4522332a70c57c9084e469bdcc2c5689ce95218afc350184a6d1ff2072a2786",
+   "status": "unavailable",
+   "note": "[extraction rejected: unit price rises from $2.9100 at qty 1 to $3.2500 at qty 1, so this is not a quantity ladder]"
+  },
+  {
+   "mpn": "DSPIC33CK256MP605",
+   "manufacturer": "Microchip",
+   "role": "Converter controller",
+   "qty_per_cell": 0,
+   "source": "Microchip",
+   "url": "https://www.microchip.com/en-us/product/dspic33ck256mp605",
+   "breaks": [],
+   "stock": 89,
+   "lead_time_weeks": null,
+   "currency": "USD",
+   "retrieved_at": "2026-07-28T21:56:09+00:00",
+   "sha256": "97f78c82bf01a3afff7d4f15234a5463825ff3452630327672032355a57ffaa9",
+   "status": "unavailable",
+   "note": "One per converter, shared across the eight cells [extraction rejected: unit price rises from $1.7400 at qty 27 to $2.2600 at qty 49, so this is not a quantity ladder]"
+  },
+  {
+   "mpn": "MIE1W0505BGLVH",
+   "manufacturer": "Murata",
+   "role": "Isolated 5 V bias supply, 1 W",
+   "qty_per_cell": 1,
+   "source": "Murata",
+   "url": "https://www.murata.com/en-eu/products/productdetail?partno=MIE1W0505BGLVH",
+   "breaks": [],
+   "stock": null,
+   "lead_time_weeks": null,
+   "currency": "USD",
+   "retrieved_at": "2026-07-28T21:56:19+00:00",
+   "sha256": "673050926d61a89b0ab1b0dce09055d29afd39d89ba1b4b311b6197d081b7d18",
+   "status": "unavailable",
+   "note": "[page retrieved but published no price ladder]"
+  },
+  {
+   "mpn": "ELP18/4/10-3F46",
+   "manufacturer": "Ferroxcube",
+   "role": "Planar ferrite core set for the transformer",
+   "qty_per_cell": 2,
+   "source": "Ferroxcube",
+   "url": "https://www.ferroxcube.com/en-global/products_ferroxcube/stepTwo/planar_e_cores",
+   "breaks": [],
+   "stock": null,
+   "lead_time_weeks": null,
+   "currency": "USD",
+   "retrieved_at": "2026-07-28T21:56:29+00:00",
+   "sha256": "80ae0f2f1cb7b1c16fe0a3f60842fa19113b9b0a8617c3d0a841d10d490cbbc6",
+   "status": "unavailable",
+   "note": "Core geometry is catalogued from the TDK equivalent; Ferroxcube does not publish prices and distributors block automation [page retrieved but published no price ladder]"
+  }
+ ]
+}

@@ -1,0 +1,150 @@
+{
+ "version": 1,
+ "benchmarks": [
+  {
+   "key": "ti_eighth_brick",
+   "title": "TI 1 MHz, 1 kW eighth-brick LLC bus converter",
+   "source_key": "ti_ssztd94",
+   "role": "analytic",
+   "what_is_published": [
+    "matrix transformer structure and PWB layer stackup",
+    "a closed-form AC winding resistance expression",
+    "a statement that the expression agreed with a transient FEA model to within one percent",
+    "measured converter efficiency, loss and regulation against load"
+   ],
+   "what_is_not_published": [
+    "measured transformer loss separated from converter loss",
+    "measured inductances or AC resistance against frequency",
+    "core material, core part number or complete core dimensions",
+    "airflow rate, heatsink or thermal boundary conditions",
+    "winding or core temperature"
+   ],
+   "observables": [
+    {
+     "key": "winding_loss_equation",
+     "description": "Reproduce the published closed-form AC resistance expression for a stated geometry",
+     "unit": "ohm",
+     "tolerance": 0.02,
+     "tolerance_kind": "relative",
+     "source_disclosed": true,
+     "note": "This checks arithmetic against a published equation. It says nothing about whether the equation matches hardware."
+    },
+    {
+     "key": "converter_efficiency",
+     "description": "Total converter efficiency against load",
+     "unit": "fraction",
+     "tolerance": 0.01,
+     "tolerance_kind": "absolute",
+     "source_disclosed": true,
+     "note": "Includes semiconductors, gate drive and control. The transformer is a minority of this number, so agreement is a weak constraint on the transformer model."
+    }
+   ],
+   "why_it_cannot_validate": "The one percent agreement TI reports is between its own equation and its own finite element model. Both are simulations. Treating that as hardware validation would be a category error, and the measured figure it does publish is converter-level."
+  },
+  {
+   "key": "epc_isop",
+   "title": "EPC 800 VDC to 12.5 V, 6 kW ISOP converter",
+   "source_key": "epc91123_kit_guide",
+   "role": "consistency",
+   "what_is_published": [
+    "the eight-cell ISOP architecture and 4:1:1 turns ratio",
+    "100 V and 750 W per cell, roughly 1 MHz resonance",
+    "converter footprint of 4982 mm2 and 8 mm height",
+    "14-layer transformer board, 6-layer power board",
+    "core type and material by name",
+    "efficiency against output current, and housekeeping power"
+   ],
+   "what_is_not_published": [
+    "winding artwork, trace widths or via construction",
+    "dielectric thicknesses or complete layer stackup",
+    "magnetising and leakage inductance",
+    "loss broken down by mechanism",
+    "any thermal test condition"
+   ],
+   "observables": [
+    {
+     "key": "architecture_match",
+     "description": "Cell count, turns ratio and cell power agree with the published architecture",
+     "unit": "",
+     "tolerance": 0.0,
+     "tolerance_kind": "absolute",
+     "source_disclosed": true,
+     "note": "Exact match expected; these are integers."
+    },
+    {
+     "key": "converter_efficiency_full_load",
+     "description": "Efficiency near full load",
+     "unit": "fraction",
+     "tolerance": 0.015,
+     "tolerance_kind": "absolute",
+     "source_disclosed": true,
+     "note": "Read from a plotted curve, so the reference itself carries reading error of roughly half a point."
+    },
+    {
+     "key": "footprint",
+     "description": "Converter area",
+     "unit": "mm2",
+     "tolerance": 0.25,
+     "tolerance_kind": "relative",
+     "source_disclosed": true,
+     "note": "A loose band: layout is not disclosed, so this only catches an answer that is wildly the wrong size."
+    }
+   ],
+   "why_it_cannot_validate": "No transformer-level measurement is published at all. Matching the converter efficiency would leave the transformer model unconstrained, because semiconductor loss dominates and is not separable from the outside."
+  },
+  {
+   "key": "navitas_crps",
+   "title": "Navitas 1.5 kW CRPS LLC module with a planar matrix transformer",
+   "source_key": "navitas_crps_planar",
+   "role": "plausibility",
+   "what_is_published": [
+    "10-layer interleaved planar transformer concept",
+    "three transformer elements at 5:1 each",
+    "module envelope of 90 by 30.5 by 11 mm",
+    "switching above 600 kHz and efficiency above 97.5 percent"
+   ],
+   "what_is_not_published": [
+    "trace dimensions, copper weight or dielectric thickness",
+    "core material or dimensions",
+    "numeric loss breakdown",
+    "thermal model or test conditions",
+    "full-power test results; the paper reports partial power"
+   ],
+   "observables": [
+    {
+     "key": "stackup_plausibility",
+     "description": "Layer count and interleaving scheme are of the same order as a real design",
+     "unit": "",
+     "tolerance": 0.0,
+     "tolerance_kind": "absolute",
+     "source_disclosed": false,
+     "note": "Qualitative. No numeric claim is made against this."
+    }
+   ],
+   "why_it_cannot_validate": "The experimental section reports roughly 1.25 kW, not the headline 1.5 kW, with full-power testing described as future work. It supports plausibility of the approach and nothing quantitative."
+  }
+ ],
+ "frozen_parameters": [
+  "Steinmetz coefficients fitted only to published datasheet points",
+  "Dowell porosity factor",
+  "via plating thickness",
+  "switch-node stray capacitance",
+  "thermal interface resistances in the lumped network"
+ ],
+ "calibration_allowed_against": [
+  "ti_eighth_brick"
+ ],
+ "holdout": [
+  "epc_isop",
+  "navitas_crps"
+ ],
+ "rules": [
+  "This protocol is committed and hashed before any comparison runs.",
+  "Model parameters may be adjusted only against the calibration reference, and only before hold-out references are scored.",
+  "A hold-out reference that misses its band is reported as a miss. Tolerances are not widened afterwards.",
+  "Only quantities the source actually published may be compared.",
+  "Residual converter loss may never be attributed to the transformer to make a comparison work.",
+  "No reference here can validate the transformer model, because none publishes a transformer-level measurement."
+ ],
+ "content_hash": "3c234bdece3a85527226c0f6012339bbc3029b29e7235255ddfe607c20887f69"
+}
