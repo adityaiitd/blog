@@ -1,0 +1,180 @@
+# OCP Diablo 400 rack interface constraints.
+#
+# SCOPE WARNING. This file describes what the sidecar rack delivers at its
+# output connector. Diablo 400 does not specify a 12.5 V converter, a 6 kW
+# rating, eight LLC cells, a switching frequency, tank values or downstream
+# converter efficiency. Nothing here may be promoted into the converter brief
+# except through an explicitly DERIVED requirement that shows its arithmetic.
+#
+# Table 4 of v0.7.0 carries the DC output voltage parameters but did not render
+# as text in the retrieved copy. The numeric values below are taken from the
+# identically structured Table 4 of v0.5.2 and are cited to that revision.
+
+scope: diablo_interface
+title: OCP Diablo 400 disaggregated power rack interface
+description: >-
+  Upstream constraints only. The sidecar rectifies medium-voltage AC to a
+  nominal bipolar +/-400 VDC bus, with a two-wire 800 VDC output permitted as a
+  design option. FORGE designs a downstream DC/DC that must be compatible with
+  this interface; the interface does not define that converter.
+
+requirements:
+
+  - key: diablo.architecture
+    value: bipolar_pm400_or_unipolar_800
+    unit: ""
+    category: input_architecture
+    provenance: sourced
+    source_key: ocp_diablo_400_v070
+    locator: "section 8.2.1"
+    rationale: >-
+      The PSU module outputs 400 Vdc as a floating three-wire arrangement
+      (+400, -400, Common), with a design option connected at the power shelf
+      output as two wires for 800 VDC.
+
+  - key: diablo.rail_voltage_full_load
+    value: 400.0
+    unit: V
+    category: input_architecture
+    provenance: sourced
+    source_key: ocp_diablo_400_v052
+    locator: "section 9.3.1, Table 4"
+    tolerance: [-0.005, 0.005]
+    rationale: "+400 to COM measured at the PSU or power shelf output connector."
+
+  - key: diablo.rail_voltage_no_load
+    value: 410.0
+    unit: V
+    category: input_architecture
+    provenance: sourced
+    source_key: ocp_diablo_400_v052
+    locator: "section 9.3.1, Table 4"
+    rationale: >-
+      Nominal at no load. A 10 V +/-0.5 V droop is built into the setpoint, so
+      the rail falls to 400 V at full load.
+
+  - key: diablo.rail_droop
+    value: 10.0
+    unit: V
+    category: output_regulation
+    provenance: sourced
+    source_key: ocp_diablo_400_v052
+    locator: "section 9.3.1, Table 4"
+    tolerance: [-0.5, 0.5]
+    rationale: "V_droop dc built into the nominal setpoint."
+
+  - key: diablo.rail_transient_excursion
+    value: 0.03
+    unit: fraction
+    category: output_regulation
+    provenance: sourced
+    source_key: ocp_diablo_400_v052
+    locator: "section 9.3.1, Table 4"
+    rationale: >-
+      Output voltage transient overshoot/undershoot of +/-3% from the typical
+      set point. This sets the downstream converter's transient input envelope.
+
+  - key: diablo.rail_ripple
+    value: 0.02
+    unit: fraction_pk_pk
+    category: output_regulation
+    provenance: sourced
+    source_key: ocp_diablo_400_v052
+    locator: "section 9.3.1, Table 4"
+    rationale: >-
+      Ripple and noise stated as +/-1% or +/-2% pk-pk. The larger figure is
+      carried as the conservative bound; the specification text marks this row
+      provisional, so it is re-checked against the released revision.
+    notes: "Draft table row; treat as provisional pending a final revision."
+
+  - key: diablo.isolation_from_pe
+    value: required
+    unit: ""
+    category: insulation
+    provenance: sourced
+    source_key: ocp_diablo_400_v070
+    locator: "section 8.2.1"
+    rationale: >-
+      In the two-wire 800 VDC option the 800 VDC and Return shall be safety
+      isolated from PE ground, and downstream converters shall have safety
+      isolated inputs from PE ground. This is the one insulation requirement
+      Diablo places directly on the converter FORGE designs.
+
+  - key: diablo.psu_holdup
+    value: 0.020
+    unit: s
+    category: sequencing
+    provenance: sourced
+    source_key: ocp_diablo_400_v070
+    locator: "section 7.1.3.1"
+    rationale: >-
+      Minimum holdup without energy storage is up to 20 ms at 100% loading.
+      This is a requirement on the AC/DC PSU, not on the downstream DC/DC.
+      Distributed holdup between the PSU and the downstream converter is
+      described as acceptable, which makes downstream holdup an option to be
+      allocated rather than an inherited obligation.
+    notes: >-
+      Do not apply this to the converter brief without an explicit allocation
+      decision recorded as its own requirement.
+
+  - key: diablo.rack_efficiency_20pct
+    value: 0.95
+    unit: fraction
+    category: efficiency_boundary
+    provenance: sourced
+    source_key: ocp_diablo_400_v070
+    locator: "section 7.3.4, Table 9"
+    rationale: >-
+      End-to-end rack efficiency greater than 95% at 20% load, measured from
+      the AC PDU input to the DC PDU output and including cooling,
+      distribution, control and backup losses. This is a rack figure and is
+      explicitly not a target for the downstream DC/DC converter.
+
+  - key: diablo.downstream_converter_location
+    value: outside_rack
+    unit: ""
+    category: input_architecture
+    provenance: sourced
+    source_key: ocp_diablo_400_v070
+    locator: "sections 7.1.3.1, 8.4"
+    rationale: >-
+      The distribution cable terminates at an IT rack DC/DC converter shelf
+      located outside the sidecar, confirming that the converter FORGE designs
+      sits beyond Diablo's specified boundary.
+
+  # ---- values carried into the converter brief, with the arithmetic shown ----
+
+  - key: diablo.bus_800v_full_load
+    value: 800.0
+    unit: V
+    category: input_architecture
+    provenance: derived
+    rationale: >-
+      Two-wire 800 VDC option, rail to rail: 2 x 400 V at full load.
+
+  - key: diablo.bus_800v_no_load
+    value: 820.0
+    unit: V
+    category: input_architecture
+    provenance: derived
+    rationale: >-
+      Two-wire 800 VDC option, rail to rail: 2 x 410 V at no load.
+
+  - key: diablo.bus_800v_max_steady
+    value: 824.1
+    unit: V
+    category: input_architecture
+    provenance: derived
+    rationale: >-
+      Worst-case steady bus: no-load 820 V raised by the +0.5% regulation
+      tolerance, 820 x 1.005 = 824.1 V.
+
+  - key: diablo.bus_800v_max_transient
+    value: 844.6
+    unit: V
+    category: input_architecture
+    provenance: derived
+    rationale: >-
+      Worst-case transient bus: no-load 820 V raised by the +3% transient
+      excursion, 820 x 1.03 = 844.6 V. This is the voltage the downstream
+      converter's input stage must survive.

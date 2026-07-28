@@ -155,6 +155,15 @@ _POLICIES: Dict[str, LicensePolicy] = {
             notes="DMR51 is a DMEGC material. Do not attribute it to TDK.",
         ),
         LicensePolicy(
+            license_id="proterial-datasheet",
+            owner="Proterial, Ltd. (formerly Hitachi Metals)",
+            summary="Copyrighted product literature, all rights reserved.",
+            redistribute_source=False,
+            redistribute_excerpt=False,
+            publish_derived_values=True,
+            notes="ML95S is a Proterial material; do not attribute elsewhere.",
+        ),
+        LicensePolicy(
             license_id="navitas-paper",
             owner="Navitas Semiconductor",
             summary=(

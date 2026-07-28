@@ -1,0 +1,62 @@
+[
+  {
+    "key": "ocp_diablo_400_v070",
+    "url": "https://www.opencompute.org/documents/ocp-specification-diablo-400-v0-7-0-final-pdf",
+    "reason": "managed_challenge",
+    "what_it_blocks": "Diablo rack interface requirements",
+    "state": "open",
+    "opened_at": "2026-07-28T19:57:49+00:00",
+    "resolved_at": "",
+    "resolution": "",
+    "alternate_source": "",
+    "notes": "Direct HTTP refused and the browser met a managed challenge. Satisfy by supplying the document through a licensed route and recording its hash."
+  },
+  {
+    "key": "ocp_diablo_400_v052",
+    "url": "https://www.opencompute.org/documents/ocp-specification-diablo-400-v0p5p2-2025-05-30-pdf",
+    "reason": "managed_challenge",
+    "what_it_blocks": "DC output voltage regulation parameters (Table 4)",
+    "state": "open",
+    "opened_at": "2026-07-28T19:57:59+00:00",
+    "resolved_at": "",
+    "resolution": "",
+    "alternate_source": "",
+    "notes": "Direct HTTP refused and the browser met a managed challenge. Satisfy by supplying the document through a licensed route and recording its hash."
+  },
+  {
+    "key": "iec_62368_1",
+    "url": "https://webstore.iec.ch/publication/27412",
+    "reason": "licensed_standard",
+    "what_it_blocks": "creepage, clearance and dielectric test derivation",
+    "state": "open",
+    "opened_at": "2026-07-28T19:58:13+00:00",
+    "resolved_at": "",
+    "resolution": "",
+    "alternate_source": "",
+    "notes": "Satisfy by having a reviewer with a licensed copy confirm the derived spacings and test voltages."
+  },
+  {
+    "key": "iec_60664_1",
+    "url": "https://webstore.iec.ch/publication/62870",
+    "reason": "licensed_standard",
+    "what_it_blocks": "insulation coordination tables",
+    "state": "open",
+    "opened_at": "2026-07-28T19:58:13+00:00",
+    "resolved_at": "",
+    "resolution": "",
+    "alternate_source": "",
+    "notes": "Satisfy by having a reviewer with a licensed copy confirm the derived spacings and test voltages."
+  },
+  {
+    "key": "proterial_ml95s",
+    "url": "https://www.proterial.com/e/products/elec/ferrite.html",
+    "reason": "withdrawn",
+    "what_it_blocks": "core material properties for the EPC reference core",
+    "state": "open",
+    "opened_at": "2026-07-28T19:58:25+00:00",
+    "resolved_at": "",
+    "resolution": "",
+    "alternate_source": "",
+    "notes": ""
+  }
+]
