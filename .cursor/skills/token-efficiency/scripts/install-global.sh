@@ -142,12 +142,25 @@ verify() {
 
   echo
   echo "This checkout ($PWD):"
-  [[ -f "$PWD/.cursor/skills/$skill_name/SKILL.md" ]] \
-    && echo "  project skill present - visible in THIS project only" \
-    || echo "  no project skill here"
-  [[ -f "$PWD/.cursor/rules/token-efficiency.mdc" ]] \
-    && echo "  project rule present - always-on in THIS project only" \
-    || echo "  no project rule here"
+  local here="$PWD/.cursor/skills/$skill_name/SKILL.md" same_as_global=0
+  for home in "${homes[@]}"; do
+    if [[ -f "$here" && "$here" -ef "$home/.cursor/skills/$skill_name/SKILL.md" ]]; then
+      same_as_global=1
+    fi
+  done
+  if [[ $same_as_global -eq 1 ]]; then
+    echo "  running from a home directory - the .cursor/skills here IS the global"
+    echo "  install reported above, not a separate project copy"
+  elif [[ -f "$here" ]]; then
+    echo "  project skill present - visible in THIS project only"
+  else
+    echo "  no project skill here"
+  fi
+  if [[ -f "$PWD/.cursor/rules/token-efficiency.mdc" ]]; then
+    echo "  project rule present - always-on in THIS project only"
+  else
+    echo "  no project rule here"
+  fi
 
   echo
   echo "Not checkable from a script:"
