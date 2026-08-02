@@ -34,13 +34,13 @@ Browse them in `public/index.html`.
 python3 bookmarks-digest/scripts/enrich_and_summarize.py
 ```
 
-6. Open the viewer:
+6. Open the viewer (serve the whole app folder so `/data` is reachable):
 
 ```bash
-cd bookmarks-digest/public && python3 -m http.server 8765
+cd bookmarks-digest && python3 -m http.server 8765
 ```
 
-Then visit `http://localhost:8765` (it loads `../data/bookmarks.json`).
+Then visit `http://localhost:8765/public/`.
 
 ## Files
 

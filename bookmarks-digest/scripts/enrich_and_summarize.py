@@ -182,8 +182,7 @@ def process_post(raw: dict[str, Any], enrich: bool) -> dict[str, Any]:
         url = link.get("url") if isinstance(link, dict) else str(link)
         if not url:
             continue
-        if enrich and not url.startswith("https://t.co/") is False:
-            # Always try to enrich http(s) links; t.co may redirect
+        if enrich:
             enriched_links.append(enrich_link(url))
         else:
             enriched_links.append(
