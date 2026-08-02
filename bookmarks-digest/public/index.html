@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Bookmark Briefs</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --ink: #1a2332;
+      --muted: #5a6a7a;
+      --paper: #f7f3ee;
+      --panel: rgba(255, 255, 255, 0.78);
+      --accent: #0d7a6f;
+      --accent-2: #e8a838;
+      --line: rgba(26, 35, 50, 0.12);
+      --shadow: 0 18px 50px rgba(26, 35, 50, 0.10);
+      --radius: 18px;
+    }
+
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-height: 100%; }
+    body {
+      font-family: "Nunito", sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(1200px 600px at 10% -10%, #ffe7b8 0%, transparent 55%),
+        radial-gradient(900px 500px at 100% 0%, #b8e8e0 0%, transparent 50%),
+        linear-gradient(180deg, #fbf7f1 0%, #eef3f6 100%);
+      background-attachment: fixed;
+    }
+
+    .wrap {
+      width: min(1100px, calc(100% - 2rem));
+      margin: 0 auto;
+      padding: 2rem 0 4rem;
+    }
+
+    header.hero {
+      padding: 1.25rem 0 1.75rem;
+      animation: rise 0.7s ease both;
+    }
+    .brand {
+      font-family: "Fraunces", serif;
+      font-size: clamp(2.4rem, 6vw, 3.8rem);
+      line-height: 0.95;
+      letter-spacing: -0.03em;
+      margin: 0 0 0.6rem;
+    }
+    .brand span { color: var(--accent); }
+    .lede {
+      max-width: 34rem;
+      margin: 0;
+      color: var(--muted);
+      font-size: 1.1rem;
+    }
+
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      margin: 1.5rem 0 1.25rem;
+      animation: rise 0.8s ease both;
+    }
+    input[type="search"], select {
+      border: 1px solid var(--line);
+      background: var(--panel);
+      backdrop-filter: blur(8px);
+      border-radius: 999px;
+      padding: 0.75rem 1.1rem;
+      font: inherit;
+      color: var(--ink);
+      outline: none;
+    }
+    input[type="search"] { flex: 1 1 220px; min-width: 180px; }
+    select { flex: 0 1 auto; }
+    input[type="search"]:focus, select:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(13, 122, 111, 0.15);
+    }
+    .count {
+      align-self: center;
+      color: var(--muted);
+      font-weight: 600;
+      font-size: 0.95rem;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 1.05fr 1.2fr;
+      gap: 1rem;
+      align-items: start;
+    }
+    @media (max-width: 860px) {
+      .layout { grid-template-columns: 1fr; }
+      .detail { position: static !important; }
+    }
+
+    .list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.65rem;
+      max-height: min(72vh, 820px);
+      overflow: auto;
+      padding-right: 0.25rem;
+      scroll-behavior: smooth;
+      animation: rise 0.9s ease both;
+    }
+
+    button.post {
+      text-align: left;
+      border: 1px solid transparent;
+      background: var(--panel);
+      backdrop-filter: blur(8px);
+      border-radius: var(--radius);
+      padding: 1rem 1.1rem;
+      cursor: pointer;
+      font: inherit;
+      color: inherit;
+      transition: transform 0.18s ease, border-color 0.18s ease, background 0.18s ease;
+      box-shadow: var(--shadow);
+    }
+    button.post:hover { transform: translateY(-2px); border-color: rgba(13,122,111,0.25); }
+    button.post.active {
+      border-color: var(--accent);
+      background: rgba(255,255,255,0.92);
+    }
+    .post-top {
+      display: flex;
+      justify-content: space-between;
+      gap: 0.75rem;
+      margin-bottom: 0.35rem;
+    }
+    .topic {
+      font-family: "Fraunces", serif;
+      font-weight: 700;
+      font-size: 1.15rem;
+      line-height: 1.2;
+    }
+    .cat {
+      flex: 0 0 auto;
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--accent);
+      background: rgba(13, 122, 111, 0.10);
+      padding: 0.25rem 0.55rem;
+      border-radius: 999px;
+      height: fit-content;
+    }
+    .snip {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.95rem;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .meta {
+      margin-top: 0.45rem;
+      font-size: 0.82rem;
+      color: var(--muted);
+    }
+
+    .detail {
+      position: sticky;
+      top: 1rem;
+      background: rgba(255,255,255,0.88);
+      backdrop-filter: blur(10px);
+      border: 1px solid var(--line);
+      border-radius: calc(var(--radius) + 4px);
+      box-shadow: var(--shadow);
+      padding: 1.4rem 1.5rem 1.6rem;
+      min-height: 280px;
+      animation: fade 0.45s ease both;
+    }
+    .detail h2 {
+      font-family: "Fraunces", serif;
+      font-size: clamp(1.6rem, 3vw, 2.1rem);
+      margin: 0 0 0.35rem;
+      line-height: 1.15;
+    }
+    .detail .sub {
+      color: var(--muted);
+      margin: 0 0 1.1rem;
+      font-size: 0.95rem;
+    }
+    .section-label {
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin: 1rem 0 0.35rem;
+    }
+    .detail p { margin: 0; line-height: 1.55; font-size: 1.05rem; }
+    .facts {
+      margin: 0.4rem 0 0;
+      padding-left: 1.1rem;
+      color: var(--ink);
+    }
+    .facts li { margin: 0.25rem 0; }
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.6rem;
+      margin-top: 1.25rem;
+    }
+    .actions a {
+      text-decoration: none;
+      color: white;
+      background: var(--ink);
+      padding: 0.65rem 1rem;
+      border-radius: 999px;
+      font-weight: 700;
+      font-size: 0.92rem;
+      transition: transform 0.15s ease, background 0.15s ease;
+    }
+    .actions a.secondary {
+      background: transparent;
+      color: var(--accent);
+      border: 1.5px solid var(--accent);
+    }
+    .actions a:hover { transform: translateY(-1px); }
+
+    .empty {
+      color: var(--muted);
+      padding: 2rem 0.5rem;
+      text-align: center;
+    }
+    .empty code {
+      display: inline-block;
+      background: rgba(26,35,50,0.06);
+      padding: 0.15rem 0.4rem;
+      border-radius: 6px;
+    }
+
+    @keyframes rise {
+      from { opacity: 0; transform: translateY(12px); }
+      to { opacity: 1; transform: none; }
+    }
+    @keyframes fade {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header class="hero">
+      <h1 class="brand">Bookmark <span>Briefs</span></h1>
+      <p class="lede">
+        Your saved X posts, explained in plain English.
+        Pick one on the left — spend about two minutes, not twenty.
+      </p>
+    </header>
+
+    <div class="toolbar">
+      <input id="q" type="search" placeholder="Search companies, topics, people…" />
+      <select id="category" aria-label="Filter by category">
+        <option value="">All categories</option>
+      </select>
+      <div class="count" id="count">0 posts</div>
+    </div>
+
+    <div class="layout">
+      <div class="list" id="list" role="listbox" aria-label="Bookmarks"></div>
+      <aside class="detail" id="detail">
+        <p class="empty">Loading your bookmarks…</p>
+      </aside>
+    </div>
+  </div>
+
+  <script>
+    const state = { posts: [], filtered: [], activeId: null };
+
+    function esc(s) {
+      return String(s ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;");
+    }
+
+    function renderList() {
+      const list = document.getElementById("list");
+      document.getElementById("count").textContent = `${state.filtered.length} posts`;
+      if (!state.filtered.length) {
+        list.innerHTML = `<div class="empty">Nothing matched. Try another search.</div>`;
+        return;
+      }
+      list.innerHTML = state.filtered.map((p) => `
+        <button class="post ${p.id === state.activeId ? "active" : ""}"
+                role="option"
+                aria-selected="${p.id === state.activeId}"
+                data-id="${esc(p.id)}">
+          <div class="post-top">
+            <div class="topic">${esc(p.company_or_topic || "Saved post")}</div>
+            <div class="cat">${esc(p.category || "Other")}</div>
+          </div>
+          <p class="snip">${esc(p.simple_summary || p.text || "")}</p>
+          <div class="meta">@${esc(p.author_handle || "unknown")} · ~${esc(p.read_time_seconds || 90)}s</div>
+        </button>
+      `).join("");
+
+      list.querySelectorAll("button.post").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          state.activeId = btn.dataset.id;
+          renderList();
+          renderDetail();
+        });
+      });
+    }
+
+    function renderDetail() {
+      const el = document.getElementById("detail");
+      const p = state.filtered.find((x) => x.id === state.activeId) || state.filtered[0];
+      if (!p) {
+        el.innerHTML = `<p class="empty">No post selected.</p>`;
+        return;
+      }
+      state.activeId = p.id;
+
+      const facts = (p.key_facts || []).map((f) => `<li>${esc(f)}</li>`).join("");
+      const primaryLink = (p.links && p.links[0] && p.links[0].url) ? p.links[0].url : null;
+      const linkTitle = primaryLink
+        ? (p.links[0].title || p.links[0].site_name || "Open link")
+        : null;
+
+      el.innerHTML = `
+        <div class="cat" style="display:inline-block;margin-bottom:0.6rem">${esc(p.category || "Other")}</div>
+        <h2>${esc(p.company_or_topic || "Saved post")}</h2>
+        <p class="sub">by @${esc(p.author_handle || "unknown")}${p.posted_at ? " · " + esc(String(p.posted_at).slice(0,10)) : ""}</p>
+
+        <div class="section-label">In plain English</div>
+        <p>${esc(p.simple_summary || p.text || "No summary yet.")}</p>
+
+        <div class="section-label">Why you might care</div>
+        <p>${esc(p.why_it_matters || "")}</p>
+
+        ${facts ? `<div class="section-label">Quick facts</div><ul class="facts">${facts}</ul>` : ""}
+
+        ${p.text ? `<div class="section-label">Original text</div><p style="color:var(--muted);font-size:0.98rem">${esc(p.text)}</p>` : ""}
+
+        <div class="actions">
+          <a href="${esc(p.url)}" target="_blank" rel="noopener">Open on X</a>
+          ${primaryLink ? `<a class="secondary" href="${esc(primaryLink)}" target="_blank" rel="noopener">${esc(linkTitle)}</a>` : ""}
+        </div>
+      `;
+    }
+
+    function applyFilters() {
+      const q = document.getElementById("q").value.trim().toLowerCase();
+      const cat = document.getElementById("category").value;
+      state.filtered = state.posts.filter((p) => {
+        if (cat && p.category !== cat) return false;
+        if (!q) return true;
+        const hay = [
+          p.company_or_topic, p.simple_summary, p.why_it_matters,
+          p.text, p.author_handle, p.category, ...(p.tags || [])
+        ].join(" ").toLowerCase();
+        return hay.includes(q);
+      });
+      if (!state.filtered.some((p) => p.id === state.activeId)) {
+        state.activeId = state.filtered[0]?.id || null;
+      }
+      renderList();
+      renderDetail();
+    }
+
+    function fillCategories(posts) {
+      const cats = [...new Set(posts.map((p) => p.category).filter(Boolean))].sort();
+      const sel = document.getElementById("category");
+      for (const c of cats) {
+        const opt = document.createElement("option");
+        opt.value = c;
+        opt.textContent = c;
+        sel.appendChild(opt);
+      }
+    }
+
+    async function boot() {
+      const detail = document.getElementById("detail");
+      try {
+        const res = await fetch("/data/bookmarks.json", { cache: "no-store" });
+        if (!res.ok) throw new Error("missing");
+        const data = await res.json();
+        state.posts = data.posts || [];
+        if (!state.posts.length) throw new Error("empty");
+        fillCategories(state.posts);
+        state.activeId = state.posts[0].id;
+        applyFilters();
+      } catch (e) {
+        detail.innerHTML = `
+          <h2>No bookmarks loaded yet</h2>
+          <p class="sub">Two easy ways to fill this in:</p>
+          <p style="margin-bottom:0.75rem">1) Log into X in the agent browser, then say <strong>logged in</strong>.</p>
+          <p>2) On <code>https://x.com/i/bookmarks</code> in your own browser, paste the script from
+          <code>scripts/export-bookmarks.js</code> into the console, then put the downloaded
+          <code>raw-bookmarks.json</code> into <code>bookmarks-digest/data/</code> and run the enrich script.</p>
+        `;
+      }
+    }
+
+    document.getElementById("q").addEventListener("input", applyFilters);
+    document.getElementById("category").addEventListener("change", applyFilters);
+    boot();
+  </script>
+</body>
+</html>
